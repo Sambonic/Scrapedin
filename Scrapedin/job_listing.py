@@ -21,57 +21,38 @@ class JobListing:
 
     def get_id(self):
         try:
-            id_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "//div[contains(@class,'jobs-similar-jobs__see-more')]/a")
-            )).get_attribute("href")
-
-            id_element = id_element[id_element.find(
-                "referenceJobId=")+len("referenceJobId="):]
-
+            job_url = self.driver.current_url
+            id_element = job_url[job_url.find("currentJobId=")+len("currentJobId="):]
         except NoSuchElementException:
             id_element = "N/A"
         return id_element
 
     def get_skills(self):
         try:
-            # Process and return the skills
-            skills = []
+            skills_button = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH,
+                 "//button[contains(@class,'jobs-unified-top-card__job-insight-text-button')]")
+            ))
 
-            # Open the company linkedin page and return back (skills section appears afterwards for some reason)
-            try:
-                company_button = self.wait.until(EC.presence_of_element_located(
-                    (By.XPATH,
-                        "/html/body/div[5]/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[1]/div[2]/span[1]/span[1]/a")
-                ))
-                print("Should enter company site")
-                company_button.click()
-                time.sleep(3)
-                self.driver.execute_script("window.history.go(-1)")
+            time.sleep(0.3)
+            skills_button.click()
 
-                # Skills sction
-                try:
-                    skills_button = self.wait.until(EC.presence_of_element_located(
-                        (By.XPATH,
-                         "/html/body/div[5]/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[1]/div[3]/ul/div/button")
-                    ))
-                    time(0.3)
-                    skills_button.click()
+            skills_elements = self.wait.until(EC.presence_of_all_elements_located(
+                (By.XPATH,
+                 "//ul[contains(@class, 'job-details-skill-match-status-list')]/li/div[1]/div[2]")
+            ))
+            skills = [element.text for element in skills_elements]
 
-                    skills_elements = self.wait.until(EC.presence_of_all_elements_located(
-                        (By.XPATH,
-                         "//ul[contains(@class, 'job-details-skill-match-status-list')]/li/div[1]/div[2]")
-                    ))
-                    skills = [element.text for element in skills_elements]
-                except StaleElementReferenceException:
-                    driver.refresh()
+        except StaleElementReferenceException:
+            self.driver.refresh()
 
-            except NoSuchElementException:
-                skills = []
+        except TimeoutException:
+            self.driver.refresh()
 
         except NoSuchElementException:
             skills = []
 
+        
         return skills
 
     def get_position(self):
@@ -86,8 +67,7 @@ class JobListing:
         try:
            # Process and return the time
             time_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "/html/body/div[5]/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[1]/div[3]/ul/li[1]/span")
+                (By.XPATH, "//div[contains(@class,'mt5 mb2')]/ul/li/span")
             ))
             time_element = time_element.text
 
@@ -108,9 +88,10 @@ class JobListing:
             # Process and return the country
             country_element = self.wait.until(EC.presence_of_element_located(
                 (By.XPATH,
-                 "/html/body/div[5]/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[1]/div[2]/span[1]/span[2]")
+                 "//span[contains(@class,'jobs-unified-top-card__bullet')]")
             ))
             country_element = country_element.text
+
         except NoSuchElementException:
             country_element = "N/A"
         return country_element
@@ -120,9 +101,10 @@ class JobListing:
             # Process and return the city
             city_element = self.wait.until(EC.presence_of_element_located(
                 (By.XPATH,
-                 "/html/body/div[5]/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[1]/div[2]/span[1]/span[2]")
+                 "//span[contains(@class,'jobs-unified-top-card__bullet')]")
             ))
             city_element = city_element.text
+
         except NoSuchElementException:
             city_element = "N/A"
         return city_element
@@ -131,9 +113,11 @@ class JobListing:
         try:
             # Process and return the workplace
             workplace_element = self.wait.until(EC.presence_of_element_located(
-                (By.CLASS_NAME, "jobs-unified-top-card__workplace-type")
+                (By.XPATH,
+                 "//span[contains(@class,'jobs-unified-top-card__workplace-type')]")
             ))
             workplace = workplace_element.text
+
         except NoSuchElementException:
             workplace = "N/A"
         return workplace
@@ -142,9 +126,12 @@ class JobListing:
         try:
             # Process and return the company
             company_element = self.wait.until(EC.presence_of_element_located(
-                (By.CLASS_NAME, "jobs-unified-top-card__company-name")
+                (By.XPATH,
+                 "//span[contains(@class,'jobs-unified-top-card__company-name')]/a")
             ))
+
             company = company_element.text
+ 
         except NoSuchElementException:
             company = "N/A"
         return company
@@ -153,10 +140,10 @@ class JobListing:
         try:
             # Process and return the title
             title_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "/html/body/div[5]/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[1]/div[1]/h1")
+                (By.XPATH, "//div[contains(@class,'display-flex justify-space-between')]/a/h2")
             ))
             title = title_element.text
+   
         except NoSuchElementException:
             title = "N/A"
         return title
@@ -165,8 +152,7 @@ class JobListing:
         try:
             # Process and return the expertise
             expertise_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "/html/body/div[5]/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[1]/div[3]/ul/li[1]/span")
+                (By.XPATH, "//div[contains(@class,'mt5 mb2')]/ul/li/span")
             ))
             expertise = expertise_element.text
 
@@ -176,12 +162,19 @@ class JobListing:
                 expertise = expertise[start_index+1:]
             else:
                 expertise = ""
-
+    
         except NoSuchElementException:
             expertise = "N/A"
         return expertise
 
     def add_to_csv(self):
+        # Create needed folders if it !exists
+        file_path = f"{self.path}/data"
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+            os.makedirs(file_path+"/raw_data")
+            os.makedirs(file_path+"/clean_data")
+
         # File path to save the CSV file
         file_path = self.path + "/data/raw_data/datarole.csv"
 

@@ -37,50 +37,73 @@ class LinkedInScraper:
         print("Logged in successfully!")
 
     def create_cookies(self, rt_dir, user, password):
-        wait = WebDriverWait(self.driver, 30)
-        user_field = wait.until(
-            EC.presence_of_element_located((By.ID, 'session_key')))
-        pass_field = wait.until(
-            EC.presence_of_element_located((By.ID, 'session_password')))
-        user_field.send_keys(user)
-        pass_field.send_keys(password)
+        wait = WebDriverWait(self.driver, 10)
+        try:
+            user_field = wait.until(
+                EC.presence_of_element_located((By.ID, 'session_key')))
+            pass_field = wait.until(
+                EC.presence_of_element_located((By.ID, 'session_password')))
+            user_field.send_keys(user)
+            pass_field.send_keys(password)
 
-        sign_in = self.driver.find_element(
-            By.XPATH, "//button[@type='submit']")
-        sign_in.click()
+            sign_in = self.driver.find_element(
+                By.XPATH, "//button[@type='submit']")
+            sign_in.click()
 
-        cookies = self.driver.get_cookies()
-        serialized_cookies = pickle.dumps(cookies)
+        except:
+            user_field = wait.until(
+                EC.presence_of_element_located((By.ID, 'email-or-phone')))
+            pass_field = wait.until(
+                EC.presence_of_element_located((By.ID, 'password')))
+            user_field.send_keys(user)
+            pass_field.send_keys(password)
 
-        # Create new cookies and store in associated folder
-        with open(rt_dir, 'wb') as file:
-            file.write(serialized_cookies)
+            sign_in = self.driver.find_element(
+                By.XPATH, "//button[@type='submit']")
+            sign_in.click()
 
-        self.driver.quit()
+        # Check username and password
+        incorrect_fields = wait.until(
+            EC.presence_of_element_located((By.XPATH, '//div/div/p[@role="alert"]')))
+        if incorrect_fields:
+            print("Your username or password is incorrect. Please try again")
+            self.driver.quit()
+            sys.exit()
 
-        print(f"New user detected, user '{user}' created successfully.")
-        return rt_dir  # Return the path to the cookies file
+        else:
+
+            # Create new cookies and store in associated folder
+            cookies = self.driver.get_cookies()
+            serialized_cookies = pickle.dumps(cookies)
+
+            with open(rt_dir, 'wb') as file:
+                file.write(serialized_cookies)
+
+            self.driver.quit()
+
+            print(f"New user detected, user '{user}' created successfully.")
+            return rt_dir
 
     def login(self, user, password, root_dir):
         self.driver.get(
-            "https://www.linkedin.com/?trk=seo-authwall-base_nav-header-logo")
+            "https://www.linkedin.com/")
         self.path = root_dir
 
         if root_dir[-1] != '/':
-            rt_dir = root_dir + '/users/'
+            root_dir = root_dir + '/users/'
         else:
-            rt_dir = root_dir + 'users/'
+            root_dir = root_dir + 'users/'
 
         # Check if 'users' folder exists
-        if not os.path.exists(rt_dir):
-            os.makedirs(rt_dir)
+        if not os.path.exists(root_dir):
+            os.makedirs(root_dir)
 
-        rt_dir = rt_dir + user + '.pkl'
+        root_dir = root_dir + user + '.pkl'
 
-        if not os.path.exists(rt_dir):
+        if not os.path.exists(root_dir):
             try:
                 print(f"First login. Proceeding to create log file for new user...")
-                cookies_path = self.create_cookies(rt_dir, user, password)
+                cookies_path = self.create_cookies(root_dir, user, password)
                 # Load cookies separately after creating them
                 self.load_cookies(cookies_path, user)
 
@@ -88,7 +111,7 @@ class LinkedInScraper:
                 print(f"An error occurred while creating folder '{user}': {e}")
         else:
             print(f"User '{user}' exists. Proceeding to login...")
-            self.load_cookies(rt_dir, user)
+            self.load_cookies(root_dir, user)
 
     def gather_info(self, jobs_gathered):
         length = len(jobs_gathered)
@@ -102,19 +125,19 @@ class LinkedInScraper:
                 obj1.display_details()
             except TimeoutException:
                 print("Timeout occurred. Reloading the page...")
-                self.driver.refresh()
+                i = i-2
         self.driver.quit()
 
     def scrape(self, role):
         page_number = 0
         links = []
-        wait = WebDriverWait(self.driver, 30)
+        wait = WebDriverWait(self.driver, 20)
 
         role_job_listings = f"https://www.linkedin.com/jobs/search/?keywords={role}&start={page_number}"
         self.driver.get(role_job_listings)
 
+        # Find and get the total number of results
         try:
-            # Find and get the total number of results
             results = wait.until(EC.presence_of_element_located(
                 (By.XPATH, "//div[contains(@class,'jobs-search-results-list__subtitle')]/span")))
             span_text = results.text
@@ -123,32 +146,35 @@ class LinkedInScraper:
             self.driver.refresh()
 
         # Loop over all the job listings
-        while page_number < total_results:
-            ul_element = wait.until(EC.presence_of_element_located(
-            (By.XPATH, "//ul[contains(@class,'scaffold-layout__list-container')]")))
-            content = self.driver.find_element(
-                By.CLASS_NAME, 'jobs-search-results-list')
+        while page_number <= total_results:
 
-            time.sleep(1)
-            scroll_distance = 300
-            for i in range(1, 10):
-                self.driver.execute_script(
-                    "arguments[0].scrollTop = arguments[1];", content, scroll_distance)
-                scroll_distance = scroll_distance+400
-                time.sleep(0.5)
+            try:
+                ul_element = wait.until(EC.presence_of_element_located(
+                    (By.XPATH, "//ul[contains(@class,'scaffold-layout__list-container')]")))
+            except TimeoutException:
+                # No more job listings
+                break
 
-            time.sleep(1)
-
-            link_elements = ul_element.find_elements(By.TAG_NAME, "a")
-
+            time.sleep(1.5)
+            # Gather job listing URLs
+            link_elements = ul_element.find_elements(By.TAG_NAME, "li")
             for element in link_elements:
-                links.append(element.get_attribute("href"))
+
+                try:
+                    link_id = element.get_attribute("data-occludable-job-id")
+                    if link_id != None:
+                        link = f"https://www.linkedin.com/jobs/search/?currentJobId={link_id}"
+                        print(link)
+                        links.append(link)
+                except StaleElementReferenceException:
+                    continue
 
             print(f"Job listings gathered: {len(links)} / {total_results}")
 
-            page_number = page_number + 25
-
+            # Update values
+            page_number = page_number + 100
             role_job_listings = f"https://www.linkedin.com/jobs/search/?keywords={role}&start={page_number}"
+
             self.driver.get(role_job_listings)
 
         for i in range(0, len(links)):

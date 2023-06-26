@@ -1,5 +1,6 @@
 /users
 /data
+Scrapedin/__pycache__
 Scrapedin/translate.py
 Scrapedin/data_cleaning.py
 /main.py

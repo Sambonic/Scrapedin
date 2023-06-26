@@ -16,3 +16,4 @@ from selenium.webdriver.chrome.options import Options
 # Exceptions
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import StaleElementReferenceException
