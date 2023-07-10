@@ -114,19 +114,22 @@ class LinkedInScraper:
             self.load_cookies(root_dir, user)
 
     def gather_info(self, jobs_gathered):
+
+        i = 0
         length = len(jobs_gathered)
 
-        for i in range(0, length):
+        while i < length:
             time.sleep(0.5)
             self.driver.get(jobs_gathered[i])
+            
             try:
                 obj1 = JobListing(self.driver, self.path)
                 obj1.add_to_csv()
                 obj1.display_details()
+                i += 1 
             except TimeoutException:
                 print("Timeout occurred. Reloading the page...")
-                i = i-2
-        self.driver.quit()
+                self.driver.refresh()
 
     def scrape(self, role):
         page_number = 0
