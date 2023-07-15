@@ -1,38 +1,161 @@
 from Scrapedin.common_imports import *
+from Scrapedin.data_preprocessing import translate_skills
 
 
 class JobListing:
-
-    def __init__(self, driver, path):
+    def __init__(self, driver, wait, logger, csv_file_name, path):
         self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
+        self.wait = wait
+        self.logger = logger
+        self.csv_file_name = csv_file_name
         self.path = path
 
-        # Note:- one of those functions is causing timeout
-        # Reorganize and standardize variables and naming conventions
-        self.headcount = self.get_headcount()
-        self.industry = self.get_industry()
-        self.date = self.get_date()
-        self.applicants = self.get_applicants()
-        self.interviewer = self.get_interviewer()
+        time.sleep(1.5)
+        self.id = self._get_id()
+        self.date = self._get_date()
+        self.company = self._get_company()
+        self.position = self._get_position()
+        self.title = self._get_title()
+        self.headcount = self._get_headcount()
+        self.skills = self._get_skills()
+        self.industry = self._get_industry()
+        self.expertise = self._get_expertise()
+        self.applicants = self._get_applicants()
+        self.interviewer = self._get_interviewer()
+        self.country = self._get_country()
+        self.city = self._get_city()
+        self.workplace = self._get_workplace()
 
-        self.id = self.get_id()
-        self.skills = self.get_skills()
-        self.position = self.get_position()
-        self.country = self.get_country()
-        self.city = self.get_city()
-        self.workplace = self.get_workplace()
-        self.company = self.get_company()
-        self.title = self.get_title()
-        self.expertise = self.get_expertise()
+    # Extract said elements as present on the webpage
+    def _get_id(self):
+        id_text = ""
+        try:
+            job_url = self.driver.current_url
+            id_text = job_url[job_url.find(
+                "currentJobId=")+len("currentJobId="):]
 
-    def get_headcount(self):
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"ID not found")
+            pass
+
+        return id_text
+
+    def _get_date(self):
+        release_text = ""
+        delta = None
+
+        try:
+            date_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH,
+                 "/html/body/div[5]/div[3]/div[4]/div/div/main/div/div[2]/div/div[2]/div[1]/div/div[1]/div/div[1]/div[1]/div[2]/div/span[3]")
+            ))
+            self.wait.until(EC.visibility_of(date_element))
+
+            date_element = date_element.text
+
+            start_index = ""
+            for num in range(10):
+                start_index = date_element.find(str(num))
+                if start_index != -1:
+                    break
+            end_index = date_element.find("ago")
+            date_element = date_element[:end_index]
+            date_element = date_element[start_index:]
+
+            current_date = datetime.now()
+
+            if "week" in date_element:
+                time_value = int(date_element.split()[0])
+                delta = timedelta(weeks=time_value)
+            elif "day" in date_element:
+                time_value = int(date_element.split()[0])
+                delta = timedelta(days=time_value)
+            elif "hour" in date_element:
+                time_value = int(date_element.split()[0])
+                delta = timedelta(hours=time_value)
+            elif "minute" in date_element:
+                time_value = int(date_element.split()[0])
+                delta = timedelta(minutes=time_value)
+            elif "second" in date_element:
+                time_value = int(date_element.split()[0])
+                delta = timedelta(seconds=time_value)
+            elif "month" in date_element:
+                month_value = int(date_element.split()[0])
+                delta = relativedelta(months=month_value)
+
+            if delta is not None:
+                release_date = current_date - delta
+                release_text = release_date.strftime("%Y-%m-%d")
+
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error("Date not found")
+            pass
+
+        return release_text
+
+    def _get_company(self):
+        company_text = ""
+        try:
+            company_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH,
+                 "//div[contains(@class,'jobs-unified-top-card__primary-description')]/div/a")
+            ))
+            self.wait.until(EC.visibility_of(company_element))
+            company_text = company_element.text
+
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Company not found")
+            pass
+
+        return company_text
+
+    def _get_position(self):
+        position_text = ""
+        try:
+            position_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH, "//div[contains(@class,'mt5 mb2')]/ul/li/span")
+            ))
+            self.wait.until(EC.visibility_of(position_element))
+            position_text = position_element.text
+
+            end_index = position_text.find(" ·")
+
+            if end_index != -1:
+                position_text = position_text[:end_index]
+
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Position not found")
+            pass
+
+        return position_text
+
+    def _get_title(self):
+        title_text = ""
+        try:
+            title_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH,
+                 "//div[contains(@class,'display-flex justify-space-between')]/a/h2")
+            ))
+            self.wait.until(EC.visibility_of(title_element))
+            title_text = title_element.text
+
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Title not found")
+            pass
+
+        return title_text
+
+    def _get_headcount(self):
         headcount_text = ""
         try:
-            # Process and return the headcount
             headcount_element = self.wait.until(EC.presence_of_element_located(
                 (By.XPATH, "//div[contains(@class,'mt5 mb2')]/ul/li[2]/span")
             ))
+            self.wait.until(EC.visibility_of(headcount_element))
             headcount_text = headcount_element.text
 
             start_index = headcount_text.find("employees") - 1
@@ -41,121 +164,13 @@ class JobListing:
                 headcount_text = headcount_text[:start_index]
 
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Headcount not found")
             pass
-
-        if headcount_text.find("selenium.webdriver.remote") != -1:
-            headcount_text = ""
 
         return headcount_text
 
-    def get_industry(self):
-        industry_text = ""
-        try:
-            # Process and return the industry
-            industry_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH, "//div[contains(@class,'mt5 mb2')]/ul/li[2]/span")
-            ))
-            industry_text = industry_element.text
-
-            start_index = industry_text.find("· ")
-
-            if start_index != -1:
-                industry_text = industry_text[start_index+2:]
-            else:
-                industry_text = ""
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            pass
-
-        return industry_text
-
-    def get_date(self):
-        release_text = ""
-        try:
-            # Process and return the date
-            date_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                "//span[contains(@class,'jobs-unified-top-card__posted-date')]")
-            ))
-            date_element = date_element.text
-
-            # Get current date
-            current_date = datetime.now()
-
-            if "month" in date_element:
-                month_value = int(date_element.split()[0])
-                delta = relativedelta(months=month_value)
-                release_date = current_date - delta
-                release_text = release_date.strftime("%Y-%m-%d")
-            else:
-                time_value = int(date_element.split()[0])
-
-                # Determine the time unit based on the string
-                if "week" in date_element:
-                    delta = timedelta(weeks=time_value)
-                elif "day" in date_element:
-                    delta = timedelta(days=time_value)
-                elif "hour" in date_element:
-                    delta = timedelta(hours=time_value)
-                elif "minute" in date_element:
-                    delta = timedelta(minutes=time_value)
-                elif "second" in date_element:
-                    delta = timedelta(seconds=time_value)
-
-                release_date = current_date - delta
-                release_text = release_date.strftime("%Y-%m-%d")
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            pass
-
-        return release_text
-
-
-    def get_applicants(self):
-        applicants_text = ""
-        try:
-            # Process and return the applicants
-            applicants_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "//span[contains(@class,'jobs-unified-top-card__applicant-count')]")
-            ))
-            applicants_text = applicants_element.text
-
-            start_index = applicants_text.find("applicant") - 1
-
-            applicants_text = applicants_text[:start_index]
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            pass
-
-        return applicants_text
-
-    def get_interviewer(self):
-        interviewer_text = ""
-        try:
-            # Process and return the interviewer
-            interviewer_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "//div[contains(@class,'mh4 pt4 pb3')]/div/div[2]/a")
-            ))
-            interviewer_text = interviewer_element.get_attribute("href")
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            pass
-        return interviewer_text
-
-    def get_id(self):
-        id_text = ""
-        try:
-            job_url = self.driver.current_url
-            id_text = job_url[job_url.find(
-                "currentJobId=")+len("currentJobId="):]
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            pass
-        return id_text
-
-    def get_skills(self):
+    def _get_skills(self):
         skills_text = []
 
         try:
@@ -169,128 +184,48 @@ class JobListing:
                 (By.XPATH,
                  "//ul[contains(@class, 'job-details-skill-match-status-list')]/li/div[1]/div[2]")
             ))
+
             skills_text = [element.text for element in skills_elements]
+            skills_text = ", ".join(skills_text)
+            skills_text = translate_skills(skills_text)
+            skills_text = skills_text.replace("\nLook up details", "")
 
-        except (StaleElementReferenceException, TimeoutException):
-            self.driver.refresh()
-
-        except NoSuchElementException:
+        except (StaleElementReferenceException, TimeoutException, NoSuchElementException, ElementClickInterceptedException):
+            self.logger.error("Skills not found")
             pass
 
         return skills_text
 
-    def get_position(self):
-        position_text = ""
+    def _get_industry(self):
+        industry_text = ""
         try:
-           # Process and return the time
-            position_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH, "//div[contains(@class,'mt5 mb2')]/ul/li/span")
+            industry_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH, "//div[contains(@class,'mt5 mb2')]/ul/li[2]/span")
             ))
-            position_text = position_element.text
+            self.wait.until(EC.visibility_of(industry_element))
+            industry_text = industry_element.text
 
-            start_index = position_text.find(" ·")
+            start_index = industry_text.find("· ")
 
             if start_index != -1:
-                position_text = position_text[:start_index]
+                industry_text = industry_text[start_index+2:]
+            else:
+                industry_text = ""
 
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Industry not found")
             pass
 
-        return position_text
+        return industry_text
 
-    def get_country(self):
-        country_text = ""
-        try:
-            # Process and return the country
-            country_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "//span[contains(@class,'jobs-unified-top-card__bullet')]")
-            ))
-            country_text = country_element.text
-
-            start_index = country_text.rfind(", ")
-            if start_index != -1:
-                country_text = country_text[start_index+2:]
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            pass
-        return country_text
-
-    def get_city(self):
-        city_text = ""
-
-        try:
-            # Process and return the city
-            city_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "//span[contains(@class,'jobs-unified-top-card__bullet')]")
-            ))
-            city_text = city_element.text
-
-            start_index = city_text.rfind(", ")
-
-            if start_index != -1:
-                parts = city_text.split(", ")
-
-                if parts[0] == parts[1]:
-                    city_text = parts[0]
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            pass
-        return city_text
-
-    def get_workplace(self):
-        workplace_text = ""
-
-        try:
-            # Process and return the workplace
-            workplace_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "//span[contains(@class,'jobs-unified-top-card__workplace-type')]")
-            ))
-            workplace_text = workplace_element.text
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            pass
-        return workplace_text
-
-    def get_company(self):
-        company_text = ""
-        try:
-            # Process and return the company
-            company_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "//span[contains(@class,'jobs-unified-top-card__company-name')]/a")
-            ))
-
-            company_text = company_element.text
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            pass
-        return company_text
-
-    def get_title(self):
-        title_text = ""
-        try:
-            # Process and return the title
-            title_element = self.wait.until(EC.presence_of_element_located(
-                (By.XPATH,
-                 "//div[contains(@class,'display-flex justify-space-between')]/a/h2")
-            ))
-            title_text = title_element.text
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            pass
-        return title_text
-
-    def get_expertise(self):
+    def _get_expertise(self):
         expertise_text = ""
-
         try:
-            # Process and return the expertise
             expertise_element = self.wait.until(EC.presence_of_element_located(
                 (By.XPATH, "//div[contains(@class,'mt5 mb2')]/ul/li/span")
             ))
+            self.wait.until(EC.visibility_of(expertise_element))
             expertise_text = expertise_element.text
 
             start_index = expertise_text.find("· ")
@@ -299,10 +234,145 @@ class JobListing:
                 expertise_text = expertise_text[start_index+2:]
 
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Expertise not found")
             pass
+
         return expertise_text
 
-    def add_to_csv(self):
+    def _get_applicants(self):
+        applicants_text = ""
+        try:
+            applicants_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH,
+                 "//div[contains(@class,'jobs-unified-top-card__primary-description')]/div/span[5]")
+            ))
+            self.wait.until(EC.visibility_of(applicants_element))
+            applicants_text = applicants_element.text
+
+            start_index = applicants_text.find("applicant") - 1
+
+            applicants_text = applicants_text[:start_index]
+
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Applicants not found")
+            pass
+
+        return applicants_text
+
+    def _get_interviewer(self):
+        interviewer_text = ""
+        try:
+            interviewer_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH,
+                 "//div[contains(@class,'mh4 pt4 pb3')]/div/div[2]/a")
+            ))
+            self.wait.until(EC.visibility_of(interviewer_element))
+            interviewer_text = interviewer_element.get_attribute("href")
+
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Interviewer not found")
+            pass
+
+        return interviewer_text
+
+    def _get_country(self):
+        country_text = ""
+        try:
+            country_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH,
+                 "//div[contains(@class,'jobs-unified-top-card__primary-description')]/div")
+            ))
+            self.wait.until(EC.visibility_of(country_element))
+            country_text = country_element.text
+
+            start_index = country_text.rfind(", ")
+            if start_index != -1:
+                country_text = country_text[start_index + 2:]
+                end_index = country_text.find(" ")
+                if end_index != -1:
+                    country_text = country_text[:end_index]
+
+            end_index = country_text.rfind("(")
+            if end_index != -1:
+                country_text = country_text[:end_index-1]
+                start_index = country_text.rfind(" ")
+                if start_index != -1:
+                    country_text = country_text[start_index + 1:]
+
+            end_index = country_text.rfind("Reposted")
+            if end_index != -1:
+                country_text = country_text[:end_index-1]
+                start_index = country_text.rfind(" ")
+                if start_index != -1:
+                    country_text = country_text[start_index + 1:]
+
+            country_text = country_text.replace(" ", "")
+
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Country not found")
+            pass
+
+        return country_text
+
+    def _get_city(self):
+        city_text = ""
+        try:
+            city_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH,
+                 "//div[contains(@class,'jobs-unified-top-card__primary-description')]/div")
+            ))
+            self.wait.until(EC.visibility_of(city_element))
+            city_text = city_element.text
+
+            country_position = city_text.find(self.country)
+            if country_position != -1:
+                city_text = city_text[:country_position - 2]
+
+            start_index = city_text.rfind(",")
+            if start_index != -1:
+                city_text = city_text[start_index + 2:]
+            else:
+                city_text = ""
+            city_text = city_text.replace(" ", "")
+
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"City not found")
+            pass
+
+        return city_text
+
+    def _get_workplace(self):
+        workplace_text = ""
+        try:
+            workplace_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH,
+                 "//div[contains(@class,'jobs-unified-top-card__primary-description')]/div")
+            ))
+            self.wait.until(EC.visibility_of(workplace_element))
+            workplace_text = workplace_element.text
+
+            start_index = workplace_text.rfind("(")
+            end_index = workplace_text.rfind(")")
+
+            if start_index != -1 and end_index != -1:
+                workplace_text = workplace_text[start_index:end_index+1]
+            else:
+                workplace_text = ""
+
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Workplace not found")
+            pass
+
+        return workplace_text
+
+    # Add info in the CSV file with appropriate format
+    def _add_to_csv(self):
         # Create needed folders if they don't exist
         file_path = os.path.join(self.path, "data")
         os.makedirs(file_path, exist_ok=True)
@@ -310,17 +380,15 @@ class JobListing:
         os.makedirs(os.path.join(file_path, "clean_data"), exist_ok=True)
 
         # File path to save the CSV file
-        csv_file_path = os.path.join(file_path, "raw_data", "datarole.csv")
+        csv_file_path = os.path.join(file_path, "raw_data", self.csv_file_name)
 
         # Attributes
-        attributes = ["id", "skills", "position", "country",
-                      "city", "workplace", "company", "title", "expertise",
+        attributes = ["id", "skills", "position", "country", "city", "workplace", "company", "title", "expertise",
                       "headcount", "industry", "date", "applicants", "interviewer"]
 
-        # Data to be written into the CSV file
         data = {
             "id": self.id,
-            "skills": ", ".join(self.skills),
+            "skills": self.skills,
             "position": self.position,
             "country": self.country,
             "city": self.city,
@@ -344,28 +412,31 @@ class JobListing:
 
             if not file_exists:
                 try:
-                    print("Proceeding to create a new CSV header...")
+                    self.logger.info(
+                        "Proceeding to create a new CSV header...")
                     writer.writeheader()
                 except OSError as e:
-                    print("An error occurred while creating the file:", str(e))
+                    self.logger.error(
+                        "An error occurred while creating the file: %s", str(e))
 
             # Write the data into the CSV file
             writer.writerow(data)
-            print("CSV file writing complete.")
+            self.logger.info("CSV file writing complete.")
 
-    def display_details(self):
-        print("⬛ Job Listing Details:")
-        print(f"ID: {self.id}")
-        print(f"Skills: {', '.join(self.skills)}")
-        print(f"Position: {self.position}")
-        print(f"Country: {self.country}")
-        print(f"City: {self.city}")
-        print(f"Workplace: {self.workplace}")
-        print(f"Company: {self.company}")
-        print(f"Title: {self.title}")
-        print(f"Expertise: {self.expertise}")
-        print(f"Headcount: {self.headcount}")
-        print(f"Industry: {self.industry}")
-        print(f"Date: {self.date}")
-        print(f"Applicants: {self.applicants}")
-        print(f"Interviewer: {self.interviewer}")
+    # Display details gathered in terminal
+    def _display_details(self):
+        self.logger.info("⬛ Job Listing Details:")
+        self.logger.info(f"ID: {self.id}")
+        self.logger.info(f"Skills: {self.skills}")
+        self.logger.info(f"Position: {self.position}")
+        self.logger.info(f"Country: {self.country}")
+        self.logger.info(f"City: {self.city}")
+        self.logger.info(f"Workplace: {self.workplace}")
+        self.logger.info(f"Company: {self.company}")
+        self.logger.info(f"Title: {self.title}")
+        self.logger.info(f"Expertise: {self.expertise}")
+        self.logger.info(f"Headcount: {self.headcount}")
+        self.logger.info(f"Industry: {self.industry}")
+        self.logger.info(f"Date: {self.date}")
+        self.logger.info(f"Applicants: {self.applicants}")
+        self.logger.info(f"Interviewer: {self.interviewer}")

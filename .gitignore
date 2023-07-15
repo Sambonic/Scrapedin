@@ -1,6 +1,8 @@
 /users
 /data
 Scrapedin/__pycache__
-Scrapedin/translate.py
-Scrapedin/data_cleaning.py
+Scrapedin/data_preprocessing.py
+Scrapedin/unit_testing.py
 /main.py
+/logs
+Scrapedin/.gitattributes

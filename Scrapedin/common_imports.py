@@ -1,9 +1,3 @@
-import os
-import sys
-import pickle
-import time
-import csv
-
 # Actions
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -17,7 +11,19 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
+from selenium.common.exceptions import ElementClickInterceptedException
 
 # Other
+import os
+import sys
+import pickle
+import csv
+import datetime
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+
+# Performance Analysis and Benchmarking
+import time
+import psutil
+import cProfile
+import logging
