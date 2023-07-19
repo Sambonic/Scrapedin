@@ -14,6 +14,7 @@ class JobListing:
         self.id = self._get_id()
         self.date = self._get_date()
         self.company = self._get_company()
+        self.salary = self._get_salary()
         self.position = self._get_position()
         self.title = self._get_title()
         self.headcount = self._get_headcount()
@@ -42,6 +43,7 @@ class JobListing:
         return id_text
 
     def _get_date(self):
+        date_text = ""
         release_text = ""
         delta = None
 
@@ -51,46 +53,57 @@ class JobListing:
                  "/html/body/div[5]/div[3]/div[4]/div/div/main/div/div[2]/div/div[2]/div[1]/div/div[1]/div/div[1]/div[1]/div[2]/div/span[3]")
             ))
             self.wait.until(EC.visibility_of(date_element))
+            date_text = date_element.text
 
-            date_element = date_element.text
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
 
+            try:
+                date_element = self.wait.until(EC.presence_of_element_located(
+                    (By.XPATH,
+                     "//span[contains(@class,'jobs-unified-top-card__posted-date')]")
+                ))
+                self.wait.until(EC.visibility_of(date_element))
+                date_text = date_element.text
+
+            except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+                self.logger.error("Date not found")
+                pass
+
+        if date_text:
             start_index = ""
             for num in range(10):
-                start_index = date_element.find(str(num))
+                start_index = date_text.find(str(num))
                 if start_index != -1:
                     break
-            end_index = date_element.find("ago")
-            date_element = date_element[:end_index]
-            date_element = date_element[start_index:]
+
+            end_index = date_text.find("ago")
+            date_text = date_text[:end_index]
+            date_text = date_text[start_index:]
 
             current_date = datetime.now()
 
-            if "week" in date_element:
-                time_value = int(date_element.split()[0])
+            if "week" in date_text:
+                time_value = int(date_text.split()[0])
                 delta = timedelta(weeks=time_value)
-            elif "day" in date_element:
-                time_value = int(date_element.split()[0])
+            elif "day" in date_text:
+                time_value = int(date_text.split()[0])
                 delta = timedelta(days=time_value)
-            elif "hour" in date_element:
-                time_value = int(date_element.split()[0])
+            elif "hour" in date_text:
+                time_value = int(date_text.split()[0])
                 delta = timedelta(hours=time_value)
-            elif "minute" in date_element:
-                time_value = int(date_element.split()[0])
+            elif "minute" in date_text:
+                time_value = int(date_text.split()[0])
                 delta = timedelta(minutes=time_value)
-            elif "second" in date_element:
-                time_value = int(date_element.split()[0])
+            elif "second" in date_text:
+                time_value = int(date_text.split()[0])
                 delta = timedelta(seconds=time_value)
-            elif "month" in date_element:
-                month_value = int(date_element.split()[0])
+            elif "month" in date_text:
+                month_value = int(date_text.split()[0])
                 delta = relativedelta(months=month_value)
 
             if delta is not None:
                 release_date = current_date - delta
                 release_text = release_date.strftime("%Y-%m-%d")
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            self.logger.error("Date not found")
-            pass
 
         return release_text
 
@@ -105,11 +118,47 @@ class JobListing:
             company_text = company_element.text
 
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            self.logger.error(
-                f"Company not found")
-            pass
+            try:
+                company_element = self.wait.until(EC.presence_of_element_located(
+                    (By.XPATH,
+                     "//span[contains(@class,'jobs-unified-top-card__company-name')]")
+                ))
+                self.wait.until(EC.visibility_of(company_element))
+                company_text = company_element.text
+
+            except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+                self.logger.error(f"Company not found")
+                pass
 
         return company_text
+
+    def _get_salary(self):
+        salary_text = ""
+        try:
+            salary_element = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH, "//div[contains(@class,'mt5 mb2')]/ul/li/span")
+            ))
+            self.wait.until(EC.visibility_of(salary_element))
+            salary_text = salary_element.text
+
+            if "$" in salary_text:
+                end_index = salary_text.find("(")
+                if end_index != -1:
+                    salary_text = salary_text[:end_index]
+
+                end_index = salary_text.find("·")
+                if end_index != -1:
+                    salary_text = salary_text[:end_index]
+
+            else:
+                salary_text = ""
+
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            self.logger.error(
+                f"Salary not found")
+            pass
+
+        return salary_text
 
     def _get_position(self):
         position_text = ""
@@ -120,10 +169,27 @@ class JobListing:
             self.wait.until(EC.visibility_of(position_element))
             position_text = position_element.text
 
-            end_index = position_text.find(" ·")
+            div = position_text.count("·")
 
-            if end_index != -1:
-                position_text = position_text[:end_index]
+            if div == 2:
+                start_index = position_text.find("·")
+                if start_index != -1:
+                    position_text = position_text[start_index+2:]
+
+                end_index = position_text.find("·")
+                if end_index != -1:
+                    position_text = position_text[:end_index]
+
+            if div == 1:
+                positions_list = ["Full-time", "Part-time", "Contract","Internship"]
+                if any(position in position_text for position in positions_list):
+                    end_index = position_text.find("·")
+                    if end_index != -1:
+                        position_text = position_text[:end_index]
+                else:
+                    position_text = ""
+
+            position_text.replace(" ", "")
 
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
             self.logger.error(
@@ -187,7 +253,11 @@ class JobListing:
 
             skills_text = [element.text for element in skills_elements]
             skills_text = ", ".join(skills_text)
-            skills_text = translate_skills(skills_text)
+            ascii_text = unidecode(skills_text)
+            if skills_text != ascii_text:
+                skills_text = translate_skills(skills_text)
+                self.logger.info(
+                    "Non-english text detected. Proceeding to translate. . .")
             skills_text = skills_text.replace("\nLook up details", "")
 
         except (StaleElementReferenceException, TimeoutException, NoSuchElementException, ElementClickInterceptedException):
@@ -228,10 +298,16 @@ class JobListing:
             self.wait.until(EC.visibility_of(expertise_element))
             expertise_text = expertise_element.text
 
-            start_index = expertise_text.find("· ")
+            start_index = expertise_text.rfind("·")
 
             if start_index != -1:
                 expertise_text = expertise_text[start_index+2:]
+
+            positions_list = ["Full-time", "Part-time", "Contract", "Internship"]
+            if any(position in expertise_text for position in positions_list):
+                expertise_text = ""
+
+            expertise_text.replace(" ", "")
 
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
             self.logger.error(
@@ -250,14 +326,30 @@ class JobListing:
             self.wait.until(EC.visibility_of(applicants_element))
             applicants_text = applicants_element.text
 
-            start_index = applicants_text.find("applicant") - 1
-
-            applicants_text = applicants_text[:start_index]
-
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            self.logger.error(
-                f"Applicants not found")
-            pass
+
+            try:
+                applicants_element = self.wait.until(EC.presence_of_element_located(
+                    (By.XPATH,
+                     "//span[contains(@class,'jobs-unified-top-card__subtitle-secondary-grouping t-black--light')]/span[contains(@class,'jobs-unified-top-card__bullet')]")
+                ))
+                self.wait.until(EC.visibility_of(applicants_element))
+                applicants_text = applicants_element.text
+
+            except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+                self.logger.error(
+                    f"Applicants not found")
+                pass
+
+        if applicants_text:
+            end_index = applicants_text.find("applicant") - 1
+            applicants_text = applicants_text[:end_index]
+
+            if "Over" in applicants_text:
+                start_index = applicants_text.find(" ") + 1
+                applicants_text = applicants_text[start_index:]
+
+            applicants_text.replace(" ", "")
 
         return applicants_text
 
@@ -279,6 +371,7 @@ class JobListing:
         return interviewer_text
 
     def _get_country(self):
+
         country_text = ""
         try:
             country_element = self.wait.until(EC.presence_of_element_located(
@@ -288,6 +381,20 @@ class JobListing:
             self.wait.until(EC.visibility_of(country_element))
             country_text = country_element.text
 
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            try:
+                country_element = self.wait.until(EC.presence_of_element_located(
+                    (By.XPATH,
+                     "//span[contains(@class,'jobs-unified-top-card__subtitle-primary-grouping t-black')]/span[contains(@class,'jobs-unified-top-card__bullet')]")
+                ))
+                self.wait.until(EC.visibility_of(country_element))
+                country_text = country_element.text
+            except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+                self.logger.error(
+                    f"Country not found")
+                pass
+
+        if country_text:
             start_index = country_text.rfind(", ")
             if start_index != -1:
                 country_text = country_text[start_index + 2:]
@@ -311,14 +418,10 @@ class JobListing:
 
             country_text = country_text.replace(" ", "")
 
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            self.logger.error(
-                f"Country not found")
-            pass
-
         return country_text
 
     def _get_city(self):
+
         city_text = ""
         try:
             city_element = self.wait.until(EC.presence_of_element_located(
@@ -328,21 +431,32 @@ class JobListing:
             self.wait.until(EC.visibility_of(city_element))
             city_text = city_element.text
 
-            country_position = city_text.find(self.country)
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            try:
+                city_element = self.wait.until(EC.presence_of_element_located(
+                    (By.XPATH,
+                     "//span[contains(@class,'jobs-unified-top-card__subtitle-primary-grouping t-black')]/span[contains(@class,'jobs-unified-top-card__bullet')]")
+                ))
+                self.wait.until(EC.visibility_of(city_element))
+                city_text = city_element.text
+
+            except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+                self.logger.error(
+                    f"City not found")
+                pass
+
+        if city_text:
+            country_position = city_text.rfind(self.country)
             if country_position != -1:
                 city_text = city_text[:country_position - 2]
 
             start_index = city_text.rfind(",")
             if start_index != -1:
                 city_text = city_text[start_index + 2:]
-            else:
-                city_text = ""
-            city_text = city_text.replace(" ", "")
 
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            self.logger.error(
-                f"City not found")
-            pass
+            start_index = city_text.rfind("·")
+            if start_index != -1:
+                city_text = city_text[start_index + 2:]
 
         return city_text
 
@@ -356,18 +470,27 @@ class JobListing:
             self.wait.until(EC.visibility_of(workplace_element))
             workplace_text = workplace_element.text
 
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            try:
+                workplace_element = self.wait.until(EC.presence_of_element_located(
+                    (By.XPATH,
+                     "//span[contains(@class,'jobs-unified-top-card__workplace-type')]")
+                ))
+                self.wait.until(EC.visibility_of(workplace_element))
+                workplace_text = workplace_element.text
+
+            except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+                self.logger.error(f"Workplace not found")
+                pass
+
+        if workplace_text:
             start_index = workplace_text.rfind("(")
             end_index = workplace_text.rfind(")")
 
             if start_index != -1 and end_index != -1:
-                workplace_text = workplace_text[start_index:end_index+1]
-            else:
-                workplace_text = ""
-
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            self.logger.error(
-                f"Workplace not found")
-            pass
+                workplace_text = workplace_text[start_index:end_index + 1]
+        else:
+            workplace_text = ""
 
         return workplace_text
 
@@ -383,24 +506,25 @@ class JobListing:
         csv_file_path = os.path.join(file_path, "raw_data", self.csv_file_name)
 
         # Attributes
-        attributes = ["id", "skills", "position", "country", "city", "workplace", "company", "title", "expertise",
-                      "headcount", "industry", "date", "applicants", "interviewer"]
+        attributes = ["id", "date", "company", "salary", "position", "title", "headcount", "skills", "industry", "expertise", "applicants",
+                      "interviewer", "country", "city", "workplace"]
 
         data = {
             "id": self.id,
-            "skills": self.skills,
+            "date": self.date,
+            "company": self.company,
+            "salary": self.salary,
             "position": self.position,
+            "title": self.title,
+            "headcount": self.headcount,
+            "skills": self.skills,
+            "industry": self.industry,
+            "expertise": self.expertise,
+            "applicants": self.applicants,
+            "interviewer": self.interviewer,
             "country": self.country,
             "city": self.city,
-            "workplace": self.workplace,
-            "company": self.company,
-            "title": self.title,
-            "expertise": self.expertise,
-            "headcount": self.headcount,
-            "industry": self.industry,
-            "date": self.date,
-            "applicants": self.applicants,
-            "interviewer": self.interviewer
+            "workplace": self.workplace
         }
 
         # Check if the file exists
@@ -413,7 +537,7 @@ class JobListing:
             if not file_exists:
                 try:
                     self.logger.info(
-                        "Proceeding to create a new CSV header...")
+                        "Proceeding to create a new CSV header. . .")
                     writer.writeheader()
                 except OSError as e:
                     self.logger.error(
@@ -421,22 +545,23 @@ class JobListing:
 
             # Write the data into the CSV file
             writer.writerow(data)
-            self.logger.info("CSV file writing complete.")
+            self.logger.info("Data inserted into CSV file successfully.")
 
     # Display details gathered in terminal
     def _display_details(self):
         self.logger.info("⬛ Job Listing Details:")
         self.logger.info(f"ID: {self.id}")
-        self.logger.info(f"Skills: {self.skills}")
+        self.logger.info(f"Date: {self.date}")
+        self.logger.info(f"Company: {self.company}")
+        self.logger.info(f"Salary: {self.salary}")
         self.logger.info(f"Position: {self.position}")
+        self.logger.info(f"Title: {self.title}")
+        self.logger.info(f"Headcount: {self.headcount}")
+        self.logger.info(f"Skills: {self.skills}")
+        self.logger.info(f"Industry: {self.industry}")
+        self.logger.info(f"Expertise: {self.expertise}")
+        self.logger.info(f"Applicants: {self.applicants}")
+        self.logger.info(f"Interviewer: {self.interviewer}")
         self.logger.info(f"Country: {self.country}")
         self.logger.info(f"City: {self.city}")
         self.logger.info(f"Workplace: {self.workplace}")
-        self.logger.info(f"Company: {self.company}")
-        self.logger.info(f"Title: {self.title}")
-        self.logger.info(f"Expertise: {self.expertise}")
-        self.logger.info(f"Headcount: {self.headcount}")
-        self.logger.info(f"Industry: {self.industry}")
-        self.logger.info(f"Date: {self.date}")
-        self.logger.info(f"Applicants: {self.applicants}")
-        self.logger.info(f"Interviewer: {self.interviewer}")

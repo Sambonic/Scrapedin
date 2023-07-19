@@ -13,7 +13,7 @@ class Driver:
     def _set_driver(self):
         options = Options()
         options.headless = True
-        driver = webdriver.Chrome(options)
+        driver = webdriver.Chrome()
         return driver
 
     # Instantiate file and console loggers to track during runtime

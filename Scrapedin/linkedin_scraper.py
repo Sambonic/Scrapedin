@@ -1,19 +1,19 @@
 from Scrapedin.common_imports import *
 from Scrapedin.job_listing import JobListing
 from Scrapedin.driver import Driver
-
+from Scrapedin.data_preprocessing import *
 
 class LinkedInScraper(Driver):
     def __init__(self):
         super().__init__()
 
     # Load cookies if email already exists
-    def _load_cookies(self, rt_dir, email):
+    def _load_cookies(self, root_dir, email):
         try:
-            with open(rt_dir, 'rb') as file:
+            with open(root_dir, 'rb') as file:
                 serialized_cookies = file.read()
         except FileNotFoundError:
-            self.logger.error(f"File {rt_dir} not found.")
+            self.logger.error(f"File {root_dir} not found.")
             return
 
         cookies = pickle.loads(serialized_cookies)
@@ -88,7 +88,7 @@ class LinkedInScraper(Driver):
 
         self.logger.info(f"Directory: {root_dir}")
 
-        self.driver.get("https://www.linkedin.com/?original_referer=")
+        self.driver.get("https://www.linkedin.com")
 
         if not os.path.exists(root_dir):
             try:
@@ -109,7 +109,7 @@ class LinkedInScraper(Driver):
                 self.logger.error(
                     f"An error occurred while creating folder '{user}': {e}")
         else:
-            self.logger.info(f"email '{email}' exists. Proceeding to login...")
+            self.logger.info(f"Email '{email}' exists. Proceeding to login...")
             self._load_cookies(root_dir, email)
 
     # Start measuring time and space complexities
@@ -149,46 +149,48 @@ class LinkedInScraper(Driver):
 
     # Begin extracting data from gathered links
     def _gather_info(self, jobs_gathered):
+        self.logger.info("Initiating Data Extraction...")
         for job_url in jobs_gathered:
-            self.driver.get(job_url)
-            time.sleep(0.3)
-            try:
-                job_listing = JobListing(
-                    self.driver, self.wait, self.logger, self.csv_file_name, self.path)
-                job_listing._add_to_csv()
-                job_listing._display_details()
 
-            except TimeoutException:
-                self.logger.error("Timeout occurred. Reloading the page...")
-                self.driver.refresh()
+            self.driver.get(job_url)
+            self.wait.until(EC.url_to_be(job_url))
+            time.sleep(0.3)
+
+            job_listing = JobListing(
+                self.driver, self.wait, self.logger, self.csv_file_name, self.path)
+            job_listing._display_details()
+            job_listing._add_to_csv()
+        stanadard_cleaning(self.path, self.csv_file_name, self.logger)
+
+    # Create URL based on given data
+    def _build_job_listing_url(self, role, location, page_number):
+        if location is None:
+            return f"https://www.linkedin.com/jobs/search/?keywords={role}&start={page_number}"
+        else:
+            return f"https://www.linkedin.com/jobs/search/?keywords={role}&start={page_number}&location={location}"
 
     # Scrape all links available of said job role
     def scrape(self, role, location=None, page_number=0):
         links = []
-        self.wait = WebDriverWait(self.driver, 20)
 
-        if location is None:
-            role_job_listings = f"https://www.linkedin.com/jobs/search/?keywords={role}&start={page_number}"
-        else:
-            role_job_listings = f"https://www.linkedin.com/jobs/search/?keywords={role}&start={page_number}&location={location}"
-
+        role_job_listings = self._build_job_listing_url(
+            role, location, page_number)
         self.driver.get(role_job_listings)
 
         # Create file name where info will be stored
-        role_name = role.replace(" ", "")
-        self.csv_file_name = self._set_csv_file_name(role_name)
+        self.csv_file_name = self._set_csv_file_name(role.replace(" ", ""))
 
         # Find and retrieve the total number of results
         try:
             results = self.wait.until(EC.presence_of_element_located(
                 (By.XPATH, "//div[contains(@class,'jobs-search-results-list__subtitle')]/span")))
-            span_text = results.text
-            total_results = int(''.join(filter(str.isdigit, span_text)))
+            total_results = int(''.join(filter(str.isdigit, results.text)))
+            total_results = min(total_results,1000)
         except NoSuchElementException:
             self.driver.refresh()
 
         # Loop through all the job listings
-        while page_number <= total_results:
+        while page_number < total_results:
             time.sleep(1.2)
 
             try:
@@ -207,7 +209,6 @@ class LinkedInScraper(Driver):
                     link_id = element.get_attribute("data-occludable-job-id")
                     if link_id is not None:
                         link = f"https://www.linkedin.com/jobs/search/?currentJobId={link_id}"
-                        self.logger.info(link)
                         links.append(link)
                 except StaleElementReferenceException:
                     continue
@@ -217,11 +218,9 @@ class LinkedInScraper(Driver):
 
             # Update values
             page_number += 25
-            if location is None:
-                role_job_listings = f"https://www.linkedin.com/jobs/search/?keywords={role}&start={page_number}"
-            else:
-                role_job_listings = f"https://www.linkedin.com/jobs/search/?keywords={role}&start={page_number}&location={location}"
 
+            role_job_listings = self._build_job_listing_url(
+                role, location, page_number)
             self.driver.get(role_job_listings)
 
         for i, link in enumerate(links):
