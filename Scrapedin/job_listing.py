@@ -416,7 +416,6 @@ class JobListing:
                 if start_index != -1:
                     country_text = country_text[start_index + 1:]
 
-            country_text = country_text.replace(" ", "")
 
         return country_text
 

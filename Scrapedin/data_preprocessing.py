@@ -53,10 +53,8 @@ def stanadard_cleaning(file_name=None, path=None, logger=None):
     df = _remove_corrupted_data(df)
     df = _preprocess_skills(df)
     df = _convert_date(df)
-    df = _convert_salary(df)
     df.to_csv(clean_path, index=False)
 
-    top_skills()
     df.info()
     df.describe()
 
@@ -75,7 +73,7 @@ def _remove_duplicates(df):
     return df_no_duplicates
 
 def _remove_corrupted_data(df):
-    df = df[~df['country'].str.contains('·')]
+    df = df[~(df['country'] == "·")]
     return df
 
 def _preprocess_skills(df):
@@ -85,28 +83,6 @@ def _preprocess_skills(df):
 
 def _convert_date(df):
     df['date'] = pd.to_datetime(df['date'])
-    return df
-
-def _convert_salary(df):
-    df['salary'] = df['salary'].str.replace(
-        '/hr', '/yr').replace('$', '').replace(',', '').split(' - ')
-
-    for i, row in df.iterrows():
-        if len(row['salary']) == 2:  # If the salary range has two values
-            low_salary = float(row['salary'][0]) * 40 * \
-                52  # Convert low salary to yearly
-            # Convert high salary to yearly
-            high_salary = float(row['salary'][1]) * 40 * 52
-            df.at[i, 'salary'] = f"${low_salary:,.0f} - ${high_salary:,.0f}/yr"
-        else:
-            # Convert single salary to yearly
-            yearly_salary = float(row['salary'][0]) * 40 * 52
-            df.at[i, 'salary'] = f"${yearly_salary:,.0f}/yr"
-    else:  # If 'salary' is a single numeric value
-        # Convert single salary to yearly
-        yearly_salary = float(row['salary']) * 40 * 52
-        df.at[i, 'salary'] = f"${yearly_salary:,.0f}/yr"
-
     return df
 
 # Data analysis
@@ -182,15 +158,15 @@ def count_by_country():
 
 def top_skills(n=None):
 
-    if n == "max" or n == None:
-        n = len(skill_counts)
-
     raw_path, clean_path = _path_setter()
     df = pd.read_csv(clean_path)
 
     df['skills'] = df['skills'].str.split(', ').explode('skills')
 
     skill_counts = df['skills'].value_counts()
+
+    if n == "max" or n == None:
+        n = len(skill_counts)
    
     top_skills = skill_counts.head(n)
 

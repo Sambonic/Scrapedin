@@ -5,9 +5,10 @@ class Driver:
     def __init__(self):
         self.driver = self._set_driver()
         self.wait = WebDriverWait(self.driver, 3)
+        self.path = self._set_path()
         self.logger = self._set_logger()
         self.csv_file_name = None
-        self.path = self._set_path()
+        
 
     # Create and initialise driver according to preference
     def _set_driver(self):
@@ -25,9 +26,12 @@ class Driver:
         logger = logging.getLogger('my_logger')
         logger.setLevel(logging.DEBUG)
 
+        file_path = os.path.join(self.path, "logs")
+        os.makedirs(file_path, exist_ok=True)
+        file_path = os.path.join(file_path,f"log{file_date}.txt")
+        
         # Create a file handler and set its log level
-        file_handler = logging.FileHandler(
-            f'./logs/log{file_date}.txt', encoding='utf-8')
+        file_handler = logging.FileHandler(file_path, encoding='utf-8')
         file_handler.setLevel(logging.INFO)
 
         # Create a console handler and set its log level

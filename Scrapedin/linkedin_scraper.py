@@ -19,8 +19,11 @@ class LinkedInScraper(Driver):
         cookies = pickle.loads(serialized_cookies)
         try:
             self.driver.get("https://www.linkedin.com/")
-        except (TimeoutException, MaxRetryError):
+        except TimeoutException:
             self.driver.refresh()
+
+        # Clear existing cookies before adding the loaded cookies
+        self.driver.delete_all_cookies()
 
         for cookie in cookies:
             self.driver.add_cookie(cookie)
@@ -84,11 +87,16 @@ class LinkedInScraper(Driver):
     # Login
     def login(self, email, password=None):
 
+        # Create 'Users' folder if it doesn't exist
+        file_path = os.path.join(self.path, "users")
+        os.makedirs(file_path, exist_ok=True)
+
         root_dir = os.path.join(self.path, "users", f"{email}.pkl")
 
         self.logger.info(f"Directory: {root_dir}")
 
-        self.driver.get("https://www.linkedin.com")
+        self.driver.get("https://www.linkedin.com/")
+        
 
         if not os.path.exists(root_dir):
             try:
@@ -160,7 +168,7 @@ class LinkedInScraper(Driver):
                 self.driver, self.wait, self.logger, self.csv_file_name, self.path)
             job_listing._display_details()
             job_listing._add_to_csv()
-        stanadard_cleaning(self.path, self.csv_file_name, self.logger)
+        stanadard_cleaning(self.logger)
 
     # Create URL based on given data
     def _build_job_listing_url(self, role, location, page_number):
