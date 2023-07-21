@@ -85,8 +85,7 @@ def _convert_date(df):
     df['date'] = pd.to_datetime(df['date'])
     return df
 
-# Data analysis
-def translate_skills(skills):
+def _translate_skills(skills):
     translated_skills = ""
 
     options = Options()
@@ -118,11 +117,13 @@ def translate_skills(skills):
 
     return translated_skills
 
-def combine_data(role, file_name=None, path=None):
+# Data analysis
+def combine_data(role):
 
     role = role.replace(" ", "")
+    role = role.lower()
 
-    raw_path, clean_path = _path_setter(file_name, path)
+    raw_path, clean_path = _path_setter()
 
     # Get parent directories
     raw_path = os.path.dirname(raw_path)
@@ -145,8 +146,8 @@ def combine_data(role, file_name=None, path=None):
 
         stanadard_cleaning()
 
-def count_by_country():
-    raw_path, clean_path = _path_setter()
+def count_by_country(file_name=None):
+    raw_path, clean_path = _path_setter(file_name)
 
     df = pd.read_csv(clean_path)
     country_counts = df['country'].value_counts()
@@ -156,9 +157,9 @@ def count_by_country():
 
     print(country_counts)
 
-def top_skills(n=None):
+def top_skills(file_name=None,n=None):
 
-    raw_path, clean_path = _path_setter()
+    raw_path, clean_path = _path_setter(file_name)
     df = pd.read_csv(clean_path)
 
     df['skills'] = df['skills'].str.split(', ').explode('skills')
@@ -175,9 +176,9 @@ def top_skills(n=None):
 
     print(top_skills)
 
-def job_distribution_by_expertise_level():
+def job_distribution_by_expertise_level(file_name=None):
 
-    raw_path, clean_path = _path_setter()
+    raw_path, clean_path = _path_setter(file_name)
     df = pd.read_csv(clean_path)
     
     exclude_list = ["Full-time", "Part-time", "Contract", "Internship"]

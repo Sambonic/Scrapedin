@@ -1,5 +1,5 @@
 from Scrapedin.common_imports import *
-from Scrapedin.data_preprocessing import translate_skills
+from Scrapedin.data_preprocessing import _translate_skills
 
 
 class JobListing:
@@ -255,7 +255,7 @@ class JobListing:
             skills_text = ", ".join(skills_text)
             ascii_text = unidecode(skills_text)
             if skills_text != ascii_text:
-                skills_text = translate_skills(skills_text)
+                skills_text = _translate_skills(skills_text)
                 self.logger.info(
                     "Non-english text detected. Proceeding to translate. . .")
             skills_text = skills_text.replace("\nLook up details", "")
