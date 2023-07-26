@@ -149,3 +149,4 @@ Scrapedin/unit_testing.py
 /main.py
 /logs
 Scrapedin/.gitattributes
+/scrapedin.egg-info
