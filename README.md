@@ -33,9 +33,10 @@ The Scrapedin module provides a convenient way to scrape job listings from Linke
 
 The Scrapedin module is not available on PyPI, so it must be downloaded and imported manually. Here's how you can do it:
 
-1. Download the project onto your local machine.
-2. Open the `setup.py` file on your IDE of choice.
-3. In the terminal, run the following code:
+1. Download [Python](https://www.python.org/downloads/) if you haven't already.
+2. Download the project onto your local machine.
+3. Open the `setup.py` file on your IDE of choice.
+4. In the terminal, run the following code:
 ```bash
 pip install .
 ```
