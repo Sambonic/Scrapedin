@@ -1,7 +1,7 @@
 # Scrapedin Documentation
 
 This is the documentation for the Scrapedin Python module, which is designed to scrape and gather job listings from LinkedIn using Selenium. The module contains various functions and utilities for extracting job data, cleaning and preprocessing the data, and performing data analysis. Below, you'll find the details of each function and how to use them.
-#### Last Updated: July 21st, 2023
+#### Last Updated: August 20th, 2023
 ## Table of Contents
 
 1. [Introduction](#introduction)
@@ -31,16 +31,45 @@ The Scrapedin module provides a convenient way to scrape job listings from Linke
 <a name="installation"></a>
 ## Installation
 
-The Scrapedin module is not available on PyPI, so it must be downloaded and imported manually. Here's how you can do it:
+Make sure you have [python](https://www.python.org/downloads/) downloaded if you haven't already.
+Follow these steps to set up the environment and run the application:
 
-1. Download [Python](https://www.python.org/downloads/) if you haven't already.
-2. Download the project onto your local machine.
-3. Open the `setup.py` file on your IDE of choice.
-4. In the terminal, run the following code:
+1. Clone the Repository:
+   
 ```bash
-pip install .
+git clone https://github.com/Sambonic/Scrapedin
 ```
-5. Import Scrapedin as shown below.
+
+```bash
+cd Scrapedin
+```
+
+2. Create a Python Virtual Environment:
+```bash
+python -m venv env
+```
+
+3. Activate the Virtual Environment:
+- On Windows:
+  ```
+  env\Scripts\activate
+  ```
+
+- On macOS and Linux:
+  ```
+  source env/bin/activate
+  ```
+4. Ensure Pip is Up-to-Date:
+  ```
+  python.exe -m pip install --upgrade pip
+  ```
+5. Install Dependencies:
+
+   ```bash
+   pip install .
+   ```
+
+6. Import Scrapedin as shown below.
 
 
 <a name="usage"></a>
