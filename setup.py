@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='scrapedin',
-    version='0.1',
+    version='0.1.1',
     packages=find_packages(),
     install_requires=[
         'selenium',
@@ -16,7 +16,8 @@ setup(
         'pickle',
         'csv',
         'time',
-        'logging'
+        'logging',
+        'asyncio'
     ],
     author='Sambiote',
     description='A package for scraping job listings from LinkedIn',

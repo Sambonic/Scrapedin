@@ -1,20 +1,21 @@
-from Scrapedin.common_imports import *
+from scrapedin.configurations.common_imports import *
 
 
 class Driver:
     def __init__(self):
         self.driver = self._set_driver()
-        self.wait = WebDriverWait(self.driver, 3)
+        self.wait = WebDriverWait(self.driver, 2.5)
         self.path = self._set_path()
         self.logger = self._set_logger()
-        self.csv_file_name = None
-        
 
     # Create and initialise driver according to preference
+
     def _set_driver(self):
-        options = Options()
-        options.headless = True
-        driver = webdriver.Chrome()
+        chrome_options = Options()
+        chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
+        chrome_options.add_argument("--disable-dev-shm-usage")  # Disable /dev/shm usage
+        chrome_options.add_argument("--no-sandbox")  # Disable sandboxing for better compatibility
+        driver = webdriver.Chrome(options=chrome_options)
         return driver
 
     # Instantiate file and console loggers to track during runtime
@@ -28,8 +29,8 @@ class Driver:
 
         file_path = os.path.join(self.path, "logs")
         os.makedirs(file_path, exist_ok=True)
-        file_path = os.path.join(file_path,f"log{file_date}.txt")
-        
+        file_path = os.path.join(file_path, f"log{file_date}.txt")
+
         # Create a file handler and set its log level
         file_handler = logging.FileHandler(file_path, encoding='utf-8')
         file_handler.setLevel(logging.INFO)
@@ -50,16 +51,9 @@ class Driver:
 
         return logger
 
-        # Create appropriate filename to store the data
-    def _set_csv_file_name(self, role):
-        # Create csv file name
-        current_time = datetime.now()
-        file_date = current_time.strftime("%Y%m%d%H%M")
-        file_name = f"{role}{file_date}.csv"
-        return file_name
-
     def _set_path(self):
         current_file_path = os.path.abspath(__file__)
         current_directory = os.path.dirname(current_file_path)
         parent_directory = os.path.dirname(current_directory)
-        return parent_directory
+        super_directory = os.path.dirname(parent_directory)
+        return super_directory

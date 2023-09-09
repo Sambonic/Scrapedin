@@ -1,4 +1,4 @@
-from Scrapedin.common_imports import *
+from scrapedin.configurations.common_imports import *
 
 
 def _path_setter(file_name=None, path=None, logger=None):
@@ -6,12 +6,12 @@ def _path_setter(file_name=None, path=None, logger=None):
         current_file_path = os.path.abspath(__file__)
         current_directory = os.path.dirname(current_file_path)
         parent_path = os.path.dirname(current_directory)
-        path = os.path.join(parent_path, "data")
+        super_path = os.path.dirname(parent_path)
+        path = os.path.join(super_path, "data")
     else:
         path = os.path.join(path, "data")
 
     raw_path = os.path.join(path, "raw_data")
-    clean_path = os.path.join(path, "clean_data")
 
     if file_name is None:
         # Get all file names in the folder path
@@ -63,8 +63,11 @@ def _remove_empty_skills(df):
     return df
 
 def _remove_dollar_rows(df):
-    df = df[~(df['position'].str.contains('\$') |
-              df['expertise'].str.contains('\$'))]
+    try:
+        df = df[~(df['position'].str.contains('\$') |
+                df['expertise'].str.contains('\$'))]
+    except AttributeError:
+        pass
     return df
 
 def _remove_duplicates(df):

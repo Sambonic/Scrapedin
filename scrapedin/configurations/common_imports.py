@@ -1,4 +1,4 @@
-# Actions
+# Scraping
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup
 
 # Exceptions
 from selenium.common.exceptions import TimeoutException
@@ -31,3 +32,7 @@ import logging
 
 # Data Preprocessing, Cleaning and Analyzing
 import pandas as pd
+import numpy as np
+
+# Async programming
+import asyncio

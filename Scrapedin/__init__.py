@@ -4,23 +4,30 @@ Scrapedin Package
 
 A package for scraping job listings from LinkedIn.
 
+This __init__.py file serves as the entry point for the Scrapedin package, making key classes and subpackages easily accessible.
+
+Subpackages
+-----------
+- `configurations`: Contains configuration-related modules.
+- `jobscraper`: Provides classes and functions for scraping job listings from LinkedIn.
+
 Modules
 -------
-job_listing : Provides classes and functions for job listing data extraction and processing.
-linkedin_scraper : Provides a class for logging into LinkedIn and scraping job listings.
-common_imports : Contains common imports used throughout the package.
-driver : Provides the WebDriver class for Selenium-based web scraping.
-data_preprocessing : Contains functions for data cleaning and preprocessing.
+- `LinkedInLogin`: Class for handling LinkedIn login.
+- `LinkedInJobScraper`: Class for scraping job listings on LinkedIn.
 
 Note
 ----
-Other modules in the package are mostly meant for internal use and not intended to be accessed directly.
+To simplify access to classes and subpackages, we use the `__all__` attribute to specify what should be accessible when importing the Scrapedin package.
 """
 
-from .job_listing import *
-from .linkedin_scraper import *
-from .common_imports import *
-from .driver import *
-from .data_preprocessing import *
+from .configurations.linkedin_login import LinkedInLogin
+from .jobscraper.linkedin_job_scraper import LinkedInJobScraper
+from .jobscraper.data_preprocessing import stanadard_cleaning
+from .jobscraper.data_preprocessing import combine_data
+from .jobscraper.data_preprocessing import count_by_country
+from .jobscraper.data_preprocessing import top_skills
+from .jobscraper.data_preprocessing import job_distribution_by_expertise_level
 
-__all__ = ['job_listing', 'linkedin_scraper', 'common_imports', 'driver', 'data_preprocessing']
+# List of symbols and subpackages to make accessible when importing the Scrapedin package.
+__all__ = ['LinkedInLogin', 'LinkedInJobScraper','stanadard_cleaning','combine_data','count_by_country','top_skills', 'job_distribution_by_expertise_level']

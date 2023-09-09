@@ -143,10 +143,14 @@ pyrightconfig.json
 
 # Scrapedin specific ignores
 /users
-/data
-Scrapedin/__pycache__
-Scrapedin/unit_testing.py
-/main.py
 /logs
-Scrapedin/.gitattributes
+/data
+/main.py
+/unit_tests.py
+
+/.gitattributes
 /scrapedin.egg-info
+
+scrapedin/__pycache__
+scrapedin/configuration/__pycache__
+scrapedin/jobscraper/__pycache__

@@ -1,19 +1,16 @@
 # Import the Scrapedin class
-import Scrapedin as si
-
-# Initialize Scrapedin with the path to the data folder
-scraper = si.LinkedInScraper()
+import scrapedin as si
 
 # Log in to LinkedIn
 email = 'your_email@example.com'
 password = 'your_password'
-scraper.login(email, password)
+login = si.LinkedInLogin(user, password)
 
-# Scrape job listings for a specific role (e.g., "Data Scientist")
-scraper.scrape(role='Data Scientist', location='New York, NY')
+# Initialize and scrape job listings for a specific role (e.g., "Data Scientist")
+scraper = si.LinkedInJobScraper(login, role='Data Scientist')
 
 # Combine data for the same role from multiple files
-si.combine_data(role='DataScientist')
+si.combine_data(role='Data Scientist')
 
 # Count the number of job listings by country
 si.count_by_country()

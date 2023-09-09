@@ -1,13 +1,13 @@
 # Scrapedin Documentation
 
 This is the documentation for the Scrapedin Python module, which is designed to scrape and gather job listings from LinkedIn using Selenium. The module contains various functions and utilities for extracting job data, cleaning and preprocessing the data, and performing data analysis. Below, you'll find the details of each function and how to use them.
-#### Last Updated: August 20th, 2023
+#### Last Updated: September 9th, 2023
 ## Table of Contents
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
 3. [Usage](#usage)
-4. [Functions](#functions)
+4. [Job Scraping Functions](#jsfunctions)
    - [Login](#login)
    - [Scrape](#scrape)
    - [Data Analysis](#data-analysis)
@@ -79,21 +79,18 @@ Here's an example of how to use the Scrapedin module to scrape job listings, and
 
 ```python
 # Import the Scrapedin class
-import Scrapedin as si
-
-# Initialize Scrapedin with the path to the data folder
-scraper = si.LinkedInScraper()
+import scrapedin as si
 
 # Log in to LinkedIn
 email = 'your_email@example.com'
 password = 'your_password'
-scraper.login(email, password)
+login = si.LinkedInLogin(user, password)
 
-# Scrape job listings for a specific role (e.g., "Data Scientist")
-scraper.scrape(role='Data Scientist', location='New York, NY')
+# Initialize and scrape job listings for a specific role (e.g., "Data Scientist")
+scraper = si.LinkedInJobScraper(login, role='Data Scientist')
 
 # Combine data for the same role from multiple files
-si.combine_data(role='DataScientist')
+si.combine_data(role='Data Scientist')
 
 # Count the number of job listings by country
 si.count_by_country()
@@ -106,9 +103,9 @@ si.job_distribution_by_expertise_level()
 ```
 
 
-<a name="functions"></a>
-## Functions
-The following are functions that can be called directly by the user in order to achieve the tasks of logging in, scraping data and analyzing it.
+<a name="jsfunctions"></a>
+## Job Scraping Functions
+The following are objects and functions that can be called and initialised directly by the user in order to achieve the tasks of logging in, scraping data and analyzing it.
 
 **Note:** Functions starting with "_" found in project files perform the data cleaning process automatically and are not meant to be called directly by the user.
 
@@ -116,9 +113,9 @@ The following are functions that can be called directly by the user in order to 
 <a name="login"></a>
 ## Login
 
-**Function: `login(email, password=None)`**
+**Object: `LinkedInLogin(email, password=None)`**
 
-Logs in to LinkedIn using the provided email and password. After logging in the first time, cookies file is established on your local machine from which you can can login using email after.
+Creates a login object to log into LinkedIn using the provided email and password. After logging in the first time, cookies file is established on your local machine from which you can can login using email only if wanted.
 
 - Parameters:
     - `email` (str): The email address associated with the LinkedIn account.
@@ -129,11 +126,13 @@ Example Usage:
 # Log in to LinkedIn (first time)
 email = 'your_email@example.com'
 password = 'your_password'
-scraper.login(email, password)
+login = si.LinkedInLogin(email, password)
 
 # Log in to LinkedIn (cookies exist)
 email = 'your_email@example.com'
-scraper.login(email)
+login = si.LinkedInLogin(email)
+
+# The login object will then be passed as a parameter in a 'LinkedInJobScraper' object
 ```
 
 **Note:** Since cookies of your login credentials will be stored on your local machine during the login process, it is important to be aware of the potential security risks. Ensure that you are the only user with access to your computer or hide the project folder appropriately.
@@ -142,26 +141,27 @@ scraper.login(email)
 <a name="scrape"></a>
 ## Scrape
 
-**Function: `scrape(role, location=None, page_number=0)`**
+**Object: `LinkedInJobScraper(login, role, location=None, job_number=0, batch_size = 1)`**
 
 Scrapes job listings for a specific role and location from LinkedIn. The scraped data will be saved to a CSV file in the 'raw_data' folder.
 
 Parameters:
 
+- `login`: The LinkedInLogin object from which the scraping will take place.
 - `role`: The job role or title to search for (e.g., "Data Scientist").
 - `location` (optional): The location where job listings should be searched (e.g., "United States"). If not provided, it will assume local location of your linkedin account.
-- `page_number` (optional): The page number of the job listings to start scraping. The default value is 0.
-
+- `job_number` (optional): The job number from which to start scraping. The default value is 0.
+- `batch_size` (optional): The number of concurrent pages you would like to be processed at a time. The default value is 1 as it is still under development.
 
 Example Usage:
 
 ```python
-# Scrape job listings for "Data Scientist" roles in "United States"
-scraper.scrape(role='Data Scientist', location='United States')
+# Scrape job listings for "Data Scientist" roles in "United States" and passing 'login' object from before
+ si.LinkedInJobScraper(login, role='Data Scientist', location='United States')
 
 # In case of internet interruption, you can continue where you left of by setting the page number
 # accordingly and later use the combine_data() function to gather and clean all data in one place.
-scraper.scrape(role='Data Scientist', location='United States', page_number=400)
+si.LinkedInJobScraper(login, role='Data Scientist', location='United States', job_number=400)
 ```
 
 
@@ -262,6 +262,13 @@ si.job_distribution_by_expertise_level("datascientist202307192207.csv")
 <br></br>
 <a name="legality"></a>
 # Legality
+The MIT License (MIT)
+
+This project is licensed under the MIT License - see the [LICENSE.md](Scrapedin/LICENSE.md) file for details.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 This project was done for educational purposes and to better understand the intricacies behind data extraction, cleaning and analysis.
 It is crucial to understand that any web scraping or data extraction activities you undertake, including using the Scrapedin module, does not comply with all applicable laws of linkedin and can result in legal consequences.
 It is your responsibility to understand and comply with the legal requirements related to web scraping and data usage. Creator of Scrapedin module is not responsible for any misuse or illegal use of the module.
