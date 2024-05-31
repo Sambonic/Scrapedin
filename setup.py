@@ -17,7 +17,8 @@ setup(
         'csv',
         'time',
         'logging',
-        'asyncio'
+        'asyncio',
+        'regex'
     ],
     author='Sambiote',
     description='A package for scraping job listings from LinkedIn',

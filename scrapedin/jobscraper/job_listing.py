@@ -3,7 +3,20 @@ from scrapedin.jobscraper.data_preprocessing import _translate_skills
 
 
 class JobListing:
+
+    """
+    Initializes a JobListing object with the given parameters.
+
+    Args:
+        driver: WebDriver instance used to interact with the web page.
+        wait: WebDriverWait instance used to wait for elements to appear.
+        logger: Logger instance for logging information.
+        csv_file_name: Name of the CSV file where job listings will be saved.
+        path: Path to the directory where data will be stored.
+    """
+
     def __init__(self, driver, wait, logger, csv_file_name, path):
+        
         self.driver = driver
         self.wait = wait
         self.logger = logger
@@ -25,9 +38,11 @@ class JobListing:
         self.workplace = None
         self.skills = None
         self.description = None
-        
 
-    def _extract_job_details(self):
+    def _extract_job_details(self) -> None:
+        """
+        Extracts all job details by calling individual extraction methods.
+        """
         self.id = self._extract_id()
         self.date = self._extract_date()
         self.company = self._extract_company()
@@ -43,10 +58,13 @@ class JobListing:
         self.workplace = self._extract_workplace()
         self.skills = self._extract_skills()
         self.description = self._extract_description()
-        
+
     def _extract_id(self) -> str:
         """
-        Extracts the unique id for said job listing
+        Extracts the unique ID of the job listing.
+
+        Returns:
+            str: The job listing ID.
         """
         job_url = self.driver.current_url
         pattern = r"(view\/|currentJobId=)(\d+)"
@@ -59,7 +77,10 @@ class JobListing:
 
     def _extract_date(self) -> str:
         """
-        Extracts the posted date of the job listing and formats it
+        Extracts and formats the posted date of the job listing.
+
+        Returns:
+            str: The formatted posted date.
         """
         date_text = ""
         release_text = ""
@@ -67,14 +88,11 @@ class JobListing:
 
         path = "//div[contains(@class,'jobs-unified-top-card__primary-description')]/div"
 
-
         try:
             date_element = self.wait.until(
                 EC.presence_of_element_located((By.XPATH, path)))
             self.wait.until(EC.visibility_of(date_element))
             date_text = date_element.text
-      
-
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
             pass
 
@@ -117,14 +135,16 @@ class JobListing:
 
     def _extract_company(self) -> str:
         """
-        Extracts the company name from the job listing page
+        Extracts the company name from the job listing page.
+
+        Returns:
+            str: The company name.
         """
         path = "//div[contains(@class,'job-details-jobs-unified-top-card__primary-description-container')]/div/a"
         try:
             company_element = self.wait.until(
-                EC.presence_of_element_located((By.XPATH,path))
+                EC.presence_of_element_located((By.XPATH, path))
             )
-
             return company_element.text
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
             self.logger.error("Company not found")
@@ -132,14 +152,16 @@ class JobListing:
 
     def _extract_salary(self) -> str:
         """
-        Extracts salary range per hour or per year
+        Extracts the salary range per hour or per year.
+
+        Returns:
+            str: The salary range.
         """
         path = "//div[contains(@class,'mt2 mb2')]/ul/li[1]/span/span[1]"
         try:
             salary_element = self.wait.until(
-                EC.presence_of_element_located((By.XPATH,path))
+                EC.presence_of_element_located((By.XPATH, path))
             )
-
             salary_text = salary_element.text
             if "$" not in salary_text:
                 return ""
@@ -151,12 +173,15 @@ class JobListing:
 
     def _extract_workplace(self) -> str:
         """
-        Extracts the work location (on-site, remote, hybrid)
+        Extracts the work location (on-site, remote, hybrid).
+
+        Returns:
+            str: The workplace type.
         """
         path = "//ul/li[contains(@class,'job-details-jobs-unified-top-card__job-insight job-details-jobs-unified-top-card__job-insight--highlight')]"
         try:
             workplace_element = self.wait.until(
-                EC.presence_of_element_located((By.XPATH,path))
+                EC.presence_of_element_located((By.XPATH, path))
             )
             workplace_text = workplace_element.text
             workplace_options = ["On-site", "Remote", "Hybrid"]
@@ -171,54 +196,62 @@ class JobListing:
 
     def _extract_job_type(self) -> str:
         """
-        Extracts the job type (Full-time,Part-time,Contract,Temporary,Volunteer,Internship,Other)
+        Extracts the job type (Full-time, Part-time, Contract, Temporary, Volunteer, Internship, Other).
+
+        Returns:
+            str: The job type.
         """
         path = "//ul/li[contains(@class,'job-details-jobs-unified-top-card__job-insight job-details-jobs-unified-top-card__job-insight--highlight')]"
         try:
             job_type_element = self.wait.until(
-            EC.presence_of_element_located((By.XPATH,path))
+                EC.presence_of_element_located((By.XPATH, path))
             )
             job_type_text = job_type_element.text
-            job_type_options = ["Full-time","Part-time","Contract","Temporary","Volunteer","Internship","Other" ]
+            job_type_options = ["Full-time", "Part-time", "Contract", "Temporary", "Volunteer", "Internship", "Other"]
 
             for job_type in job_type_options:
                 if job_type in job_type_text:
                     return job_type
             return ""
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            self.logger.error("Job Type not found")
+            self.logger.error("Job type not found")
             return ""
 
     def _extract_experience(self) -> str:
         """
-        Extracts the experience level required (Internship,Entry level,Associate,Mid-Senior level,Director,Executive)
+        Extracts the experience level required (Internship, Entry level, Associate, Mid-Senior level, Director, Executive).
+
+        Returns:
+            str: The experience level required.
         """
         path = "//ul/li[contains(@class,'job-details-jobs-unified-top-card__job-insight job-details-jobs-unified-top-card__job-insight--highlight')]"
         try:
             experience_element = self.wait.until(
-                EC.presence_of_element_located((By.XPATH,path))
+                EC.presence_of_element_located((By.XPATH, path))
             )
             experience_text = experience_element.text
-            experience_options = ["Internship","Entry level","Associate","Mid-Senior level","Director","Executive"]
+            experience_options = ["Internship", "Entry level", "Associate", "Mid-Senior level", "Director", "Executive"]
 
             for experience in experience_options:
                 if experience in experience_text:
                     return experience
             return ""
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            self.logger.error("Workplace not found")
+            self.logger.error("Experience level not found")
             return ""
 
     def _extract_title(self) -> str:
         """
-        Extracts the title of the job posting
+        Extracts the title of the job posting.
+
+        Returns:
+            str: The job title.
         """
         path = "//div[contains(@class,'t-24 job-details-jobs-unified-top-card__job-title')]/h1"
         try:
             title_element = self.wait.until(
-                EC.presence_of_element_located((By.XPATH,path))
+                EC.presence_of_element_located((By.XPATH, path))
             )
-
             return title_element.text
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
             self.logger.error("Title not found")
@@ -226,16 +259,19 @@ class JobListing:
 
     def _extract_headcount(self) -> str:
         """
-        Extracts the range of employees in the hiring company
+        Extracts the range of employees in the hiring company.
+
+        Returns:
+            str: The headcount range in the format "x,xxx-xx,xxx employees" or "x,xxx+ employees".
         """
         path = "//div[contains(@class,'mt2 mb2')]/ul"
         try:
             headcount_element = self.wait.until(
-                EC.presence_of_element_located((By.XPATH,path))
+                EC.presence_of_element_located((By.XPATH, path))
             )
             headcount_text = headcount_element.text
 
-            pattern = r"(\d+-\d+|\d+,?\d+\+)\s(employees)"
+            pattern = r"(\d+,?\d+-\d+,?\d+|\d+,?\d+\+)\s(employees)"
             match = re.search(pattern, headcount_text)
             if match:
                 return match.group(1)
@@ -244,15 +280,18 @@ class JobListing:
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
             self.logger.error("Headcount not found")
             return ""
-    
+
     def _extract_industry(self) -> str:
         """
-        Extracts the job industry
+        Extracts the industry of the hiring company.
+
+        Returns:
+            str: The industry of the company.
         """
         path = "//div[contains(@class,'mt2 mb2')]/ul"
         try:
             industry_element = self.wait.until(
-                EC.presence_of_element_located((By.XPATH,path))
+                EC.presence_of_element_located((By.XPATH, path))
             )
             industry_text = industry_element.text
 
@@ -263,12 +302,15 @@ class JobListing:
             else:
                 return ""
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            self.logger.error("Headcount not found")
+            self.logger.error("Industry not found")
             return ""
-    
+
     def _extract_skills(self) -> list[str]:
         """
-        Extracts the required skills of the job listing
+        Extracts the required skills of the job listing.
+
+        Returns:
+            list[str]: A list of required skills for the job.
         """
         skills_text = []
 
@@ -289,8 +331,7 @@ class JobListing:
             ascii_text = unidecode(skills_text)
             if skills_text != ascii_text:
                 skills_text = _translate_skills(skills_text)
-                self.logger.info(
-                    "Non-english text detected. Proceeding to translate. . .")
+                self.logger.info("Non-english text detected. Proceeding to translate. . .")
             skills_text = skills_text.replace("\nLook up details", "")
 
         except (StaleElementReferenceException, TimeoutException, NoSuchElementException, ElementClickInterceptedException):
@@ -301,49 +342,56 @@ class JobListing:
 
     def _extract_applicants(self) -> int:
         """
-        Extracts the total number of people that applied to the job listing at the time of the extraction 
+        Extracts the total number of people that applied to the job listing at the time of extraction.
+
+        Returns:
+            int: The number of applicants, or -1 if not found.
         """
         path = "//div[contains(@class,'job-details-jobs-unified-top-card__primary-description-container')]"
         try:
             parent_div = self.wait.until(
-            EC.presence_of_element_located((By.XPATH,path))
+                EC.presence_of_element_located((By.XPATH, path))
             )
             child_spans = [span.text.strip() for span in parent_div.find_elements(By.XPATH, ".//span")]
-            applicant_text= child_spans[-1]
+            applicant_text = child_spans[-1]
             pattern = r"(\d+)\s(applicants)"
             match = re.search(pattern, applicant_text)
             if match:
                 return int(match.group(1))
             else:
-                return ""
+                return -1
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
             self.logger.error("Applicants not found")
-            return ""
+            return -1
 
     def _extract_interviewer(self) -> str:
         """
-        Extracts the linkedin page of the hiring manager (if available)
+        Extracts the LinkedIn page of the hiring manager (if available).
+
+        Returns:
+            str: The URL of the hiring manager's LinkedIn page, or an empty string if not found.
         """
-        path ="//div[contains(@class,'mh4 pt4 pb3')]/div/a"
+        path = "//div[contains(@class,'mh4 pt4 pb3')]/div/a"
         try:
             interviewer_element = self.wait.until(
                 EC.presence_of_element_located((By.XPATH, path)))
             self.wait.until(EC.visibility_of(interviewer_element))
             return interviewer_element.get_attribute("href")
-
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
             self.logger.error("Interviewer not found")
             return ""
 
     def _extract_location(self) -> str:
         """
-        Extracts the general location given for hiring company
+        Extracts the general location given for the hiring company.
+
+        Returns:
+            str: The location of the job listing.
         """
         path = "//div[contains(@class,'job-details-jobs-unified-top-card__primary-description-without-tagline mb2')]"
-
         try:
             location_element = self.wait.until(
-                EC.presence_of_element_located((By.XPATH,path))
+                EC.presence_of_element_located((By.XPATH, path))
             )
             location_text = location_element.text
             pattern = r"· (.*?) ·"
@@ -358,26 +406,27 @@ class JobListing:
 
     def _extract_description(self) -> str:
         """
-        Extracts the job description
+        Extracts the job description.
+
+        Returns:
+            str: The job description text.
         """
-        path = "//div[contains(@class,'mt4')]"
+        path = "//article/div/div[1]/div"
         try:
             description_element = self.wait.until(
                 EC.presence_of_element_located((By.XPATH,path))
             )
-
-            return description_element.text
+            description_text = re.sub(r'\s+', ' ', description_element.text)
+            description_text = '\n'.join([line for line in description_text.splitlines() if line.strip()])
+            return description_text
         except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
             self.logger.error("Description not found")
             return ""
 
-    def _add_to_csv(self):
+    def _add_to_csv(self) -> None:
         """
-        Adds info in the CSV file with appropriate format
-        Creates necessary folders if needed
-        Formats the data and appends it to appropriately named csv file in 'raw data' folder of this project
+        Adds job listing details to a CSV file. Creates necessary folders if needed, formats the data, and appends it to an appropriately named CSV file in the 'raw data' folder of the project.
         """
-
         file_path = os.path.join(self.path, "data")
 
         os.makedirs(file_path, exist_ok=True)
@@ -411,18 +460,16 @@ class JobListing:
 
             if not file_exists:
                 try:
-                    self.logger.info(
-                        "Proceeding to create a new CSV header. . .")
+                    self.logger.info("Proceeding to create a new CSV header. . .")
                     writer.writeheader()
                 except OSError as e:
-                    self.logger.error(
-                        "An error occurred while creating the file: %s", str(e))
+                    self.logger.error("An error occurred while creating the file: %s", str(e))
             writer.writerow(data)
             self.logger.info("Data inserted into CSV file successfully.")
 
-    def _display_details(self):
+    def _display_details(self) -> None:
         """
-        Displays details extracted in terminal
+        Displays details extracted in the terminal.
         """
         self.logger.info("⬛ Job Listing Details:")
         self.logger.info(f"ID: {self.id}")

@@ -7,7 +7,7 @@ from scrapedin.jobscraper.data_preprocessing import stanadard_cleaning
 
 
 class LinkedInJobScraper:
-    def __init__(self, login, role, location=None, job_number=0, batch_size = 1):
+    def __init__(self, login, role, location=None, job_number=925, batch_size = 1):
         self.driver = login.driver
         self.wait = login.wait
         self.path = login.path

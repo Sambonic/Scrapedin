@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.webdriver import WebDriver
 from bs4 import BeautifulSoup
 
 # Exceptions
@@ -29,6 +30,7 @@ import time
 import psutil
 import cProfile
 import logging
+from logging import Logger, FileHandler, StreamHandler, Formatter, DEBUG, INFO
 
 # Data Preprocessing, Cleaning and Analyzing
 import pandas as pd
