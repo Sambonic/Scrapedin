@@ -73,6 +73,7 @@ class LinkedInJobScraper:
 
             job_listing = JobListing(
                 self.driver, self.wait, self.logger, self.csv_file_name, self.path)
+            job_listing._extract_job_details()
             job_listing._display_details()
             job_listing._add_to_csv()
 
@@ -92,7 +93,7 @@ class LinkedInJobScraper:
                 (By.XPATH, "//div[contains(@class,'jobs-search-results-list__subtitle')]/span")))
             total_results = int(''.join(filter(str.isdigit, results.text)))
             total_results = min(total_results, 1000)
-            print(f'Total results gathered: {total_results}')
+            print(f'Total results to gather: {total_results}')
             return total_results
         except (NoSuchElementException, TimeoutException):
             return 0

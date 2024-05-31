@@ -4,7 +4,7 @@ from scrapedin.configurations.common_imports import *
 class Driver:
     def __init__(self):
         self.driver = self._set_driver()
-        self.wait = WebDriverWait(self.driver, 2.5)
+        self.wait = WebDriverWait(self.driver, 1)
         self.path = self._set_path()
         self.logger = self._set_logger()
 
@@ -12,7 +12,7 @@ class Driver:
 
     def _set_driver(self):
         chrome_options = Options()
-        chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
+        #chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
         chrome_options.add_argument("--disable-dev-shm-usage")  # Disable /dev/shm usage
         chrome_options.add_argument("--no-sandbox")  # Disable sandboxing for better compatibility
         driver = webdriver.Chrome(options=chrome_options)
