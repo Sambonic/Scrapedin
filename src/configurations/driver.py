@@ -1,4 +1,4 @@
-from scrapedin.configurations.common_imports import *
+from src.configurations.common_imports import *
 
 
 class Driver:
@@ -13,10 +13,11 @@ class Driver:
     """
 
     def __init__(self) -> None:
-        self.driver: WebDriver = self._set_driver()
-        self.wait: WebDriverWait = WebDriverWait(self.driver, 1)
-        self.path: str = self._set_path()
-        self.logger: Logger = self._set_logger()
+        self.driver = self._set_driver()
+        self.wait = WebDriverWait(self.driver, 1)
+        self.path = self._set_path()
+        self.logger = self._set_logger()
+        self.session = requests.Session()
 
     def _set_driver(self) -> WebDriver:
         """
@@ -25,12 +26,12 @@ class Driver:
         Returns:
             WebDriver: The initialized Chrome WebDriver object.
         """
-        chrome_options: Options = Options()
+        chrome_options = Options()
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-images")
         chrome_options.add_argument("--no-sandbox")
         
-        driver: WebDriver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(options=chrome_options)
         return driver
 
     def _set_logger(self) -> Logger:
@@ -40,26 +41,26 @@ class Driver:
         Returns:
             Logger: The configured logger object.
         """
-        current_time: datetime = datetime.now()
-        file_date: str = current_time.strftime("%Y%m%d%H%M")
+        current_time = datetime.now()
+        file_date = current_time.strftime("%Y%m%d%H%M")
 
         # Create a logger
-        logger: Logger = logging.getLogger('my_logger')
+        logger = logging.getLogger('my_logger')
         logger.setLevel(DEBUG)
 
         # Set up file handler
-        file_path: str = os.path.join(self.path, "logs")
+        file_path = os.path.join(self.path, "logs")
         os.makedirs(file_path, exist_ok=True)
         file_path = os.path.join(file_path, f"log{file_date}.txt")
-        file_handler: FileHandler = logging.FileHandler(file_path, encoding='utf-8')
+        file_handler = logging.FileHandler(file_path, encoding='utf-8')
         file_handler.setLevel(INFO)
 
         # Set up console handler
-        console_handler: StreamHandler = logging.StreamHandler()
+        console_handler = logging.StreamHandler()
         console_handler.setLevel(DEBUG)
 
         # Create a formatter and add it to the handlers
-        formatter: Formatter = logging.Formatter('[%(asctime)s] - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('[%(asctime)s] - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
 
@@ -76,8 +77,8 @@ class Driver:
         Returns:
             str: The base path of the project directory.
         """
-        current_file_path: str = os.path.abspath(__file__)
-        current_directory: str = os.path.dirname(current_file_path)
-        parent_directory: str = os.path.dirname(current_directory)
-        super_directory: str = os.path.dirname(parent_directory)
+        current_file_path = os.path.abspath(__file__)
+        current_directory = os.path.dirname(current_file_path)
+        parent_directory = os.path.dirname(current_directory)
+        super_directory = os.path.dirname(parent_directory)
         return super_directory

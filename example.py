@@ -1,16 +1,25 @@
 # Import the Scrapedin class
-import scrapedin as si
+import src as si
+from dotenv import load_dotenv
+import os 
+
+load_dotenv()
+
+# Input your email and password
+email = os.getenv('EMAIL')
+password = os.getenv('PASSWORD')
 
 # Log in to LinkedIn
-email = 'your_email@example.com'
-password = 'your_password'
-login = si.LinkedInLogin(user, password)
+login = si.LinkedInLogin(email, password)
 
-# Initialize and scrape job listings for a specific role (e.g., "Data Scientist")
-scraper = si.LinkedInJobScraper(login, role='Data Scientist')
+# Define a specific role (e.g., "Data Scientist")
+role='Data Scientist'
+
+# Initialize and scrape job listings for the role
+scraper = si.LinkedInJobScraper(login, role=role)
 
 # Combine data for the same role from multiple files
-si.combine_data(role='Data Scientist')
+si.combine_data(role=role)
 
 # Count the number of job listings by country
 si.count_by_country()

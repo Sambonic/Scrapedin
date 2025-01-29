@@ -1,4 +1,4 @@
-from scrapedin.configurations.common_imports import *
+from src.configurations.common_imports import *
 
 
 def _path_setter(file_name=None, path=None, logger=None):

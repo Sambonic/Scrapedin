@@ -8,6 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
 from bs4 import BeautifulSoup
+import requests
 
 # Exceptions
 from selenium.common.exceptions import TimeoutException
@@ -23,7 +24,8 @@ import csv
 import datetime
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from unidecode import unidecode
+from dotenv import load_dotenv
+import json
 
 # Performance Analysis and Benchmarking
 import time
@@ -36,6 +38,3 @@ from logging import Logger, FileHandler, StreamHandler, Formatter, DEBUG, INFO
 import pandas as pd
 import numpy as np
 import regex as re
-
-# Async programming
-import asyncio

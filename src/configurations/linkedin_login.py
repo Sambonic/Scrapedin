@@ -1,6 +1,8 @@
-from scrapedin.configurations.common_imports import *
-from scrapedin.configurations.driver import Driver
+from src.configurations.common_imports import *
+from src.configurations.driver import Driver
 
+LINKEDIN_LOGIN = "https://www.linkedin.com/login"
+WAIT = 1
 
 class LinkedInLogin(Driver):
     """
@@ -10,17 +12,18 @@ class LinkedInLogin(Driver):
         email (str): Email address of the LinkedIn account.
         password (str, optional): Password of the LinkedIn account. Defaults to None.
     """
+
+
     def __init__(self, email: str, password: str = None):
         super().__init__()
         self.login(email, password)
 
-    def _load_cookies(self, root_dir: str, email: str) -> None:
+    def _load_cookies(self, root_dir: str) -> None:
         """
         Load cookies from a file and use them to log in to LinkedIn.
 
         Args:
             root_dir (str): Path to the cookies file.
-            email (str): Email address of the LinkedIn account.
         """
         try:
             with open(root_dir, 'rb') as file:
@@ -30,10 +33,25 @@ class LinkedInLogin(Driver):
             return
 
         cookies = pickle.loads(serialized_cookies)
-        try:
-            self.driver.get("https://www.linkedin.com/")
-        except TimeoutException:
-            self.driver.refresh()
+
+
+        #=========================================================================
+        #=========================================================================
+        # Add the cookies to the session
+        for cookie in cookies:
+            self.session.cookies.set(cookie['name'], cookie['value'])
+
+        # Set headers (mimic a real browser)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'X-Restli-Protocol-Version': '2.0.0',
+            'Csrf-Token': self.session.cookies.get('JSESSIONID').strip('"'),
+        }
+
+        self.session.headers.update(headers)
+        #=========================================================================
+        #=========================================================================
+
 
         # Clear existing cookies before adding the loaded cookies
         self.driver.delete_all_cookies()
@@ -42,9 +60,9 @@ class LinkedInLogin(Driver):
 
         self.driver.refresh()
         self.logger.info("Logged in successfully!")
-        time.sleep(5)
+        time.sleep(WAIT)
 
-    def _create_cookies(self, root_dir: str, email: str, password: str) -> str:
+    def _create_cookies(self, root_dir: str, email: str, password: str) -> None:
         """
         Create new cookies for a new email and save them to a file.
 
@@ -58,16 +76,7 @@ class LinkedInLogin(Driver):
         """
         try:
             email_field = self.wait.until(
-                EC.presence_of_element_located((By.ID, 'session_key'))
-            )
-            pass_field = self.wait.until(
-                EC.presence_of_element_located((By.ID, 'session_password'))
-            )
-            email_field.send_keys(email)
-            pass_field.send_keys(password)
-        except TimeoutException:
-            email_field = self.wait.until(
-                EC.presence_of_element_located((By.ID, 'email-or-phone'))
+                EC.presence_of_element_located((By.ID, 'username'))
             )
             pass_field = self.wait.until(
                 EC.presence_of_element_located((By.ID, 'password'))
@@ -75,27 +84,13 @@ class LinkedInLogin(Driver):
             email_field.send_keys(email)
             pass_field.send_keys(password)
 
-        sign_in = self.wait.until(
-            EC.presence_of_element_located((By.XPATH, "//button[@type='submit']"))
-        )
-        sign_in.click()
-
-        time.sleep(2)
-        self.driver.get("https://www.linkedin.com/")
-
-        # Check for login errors
-        try:
-            self.wait.until(
-                EC.presence_of_element_located((By.XPATH, '//*[@id="error-for-username"]'))
-            )
-            self.logger.error("Your email or password is incorrect. Please try again.")
-            self.driver.quit()
-            sys.exit()
-        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
-            self.logger.info("Creating new user. . .")
+            pass_field.submit()
+        except TimeoutException:
+            pass
+            # Revise the logic here
 
         # Save cookies
-        time.sleep(1)
+        time.sleep(WAIT)
         cookies = self.driver.get_cookies()
         serialized_cookies = pickle.dumps(cookies)
         try:
@@ -105,7 +100,6 @@ class LinkedInLogin(Driver):
             self.logger.exception(f"Failed to write cookies to file: {root_dir}")
 
         self.logger.info(f"User '{email}' created successfully.")
-        return root_dir
 
     def login(self, email: str, password: str = None) -> None:
         """
@@ -119,10 +113,11 @@ class LinkedInLogin(Driver):
         file_path = os.path.join(self.path, "users")
         os.makedirs(file_path, exist_ok=True)
 
+        # Get the the cookie file directory associated with email
         root_dir = os.path.join(file_path, f"{email}.pkl")
 
         self.logger.info(f"Directory: {root_dir}")
-        self.driver.get("https://www.linkedin.com/")
+        self.driver.get(LINKEDIN_LOGIN)
 
         if not os.path.exists(root_dir):
             if password is None:
@@ -130,9 +125,11 @@ class LinkedInLogin(Driver):
                 self.driver.quit()
                 sys.exit()
             else:
-                self.logger.info("First login. Proceeding to create log file for new user...")
-                cookies_path = self._create_cookies(root_dir, email, password)
-                self._load_cookies(cookies_path, email)
+                self.logger.info("First login. Creating a log file for the new user...")
+                self._create_cookies(root_dir, email, password)
+
         else:
             self.logger.info(f"Email '{email}' exists. Proceeding to login...")
-            self._load_cookies(root_dir, email)
+            self._load_cookies(root_dir)
+
+    # NB. Add cookie validation function here
