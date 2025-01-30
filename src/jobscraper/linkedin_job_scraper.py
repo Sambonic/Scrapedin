@@ -1,17 +1,14 @@
-from src.configurations.common_imports import *
+from src.config.common_imports import *
 from src.jobscraper.job_listing import JobListing
-from src.utils.benchmarking_utils import benchmark
-from src.utils.logging_utils import log_function_call
-from src.configurations.config import *
-from src.jobscraper.csv_handler import CSVHandler
-
-
+from src.decorators.benchmarking import benchmark
+from src.decorators.logging import log_function_call
+from src.config.config import *
+from src.managers.csv_handler import CSVHandler
+from src.managers.logger_manager import logger
 
 class LinkedInJobScraper:
     def __init__(self, login, role, location=None, job_number=0):
         self.session = login.session
-        self.logger = login.logger
-        self.path = login.path
         self.role = role
         self.location = location
         self.job_number = job_number
@@ -22,7 +19,7 @@ class LinkedInJobScraper:
         """Handles API requests and returns JSON data and status code."""
         response = self.session.get(url)
         if response.status_code != 200:
-            self.logger.warning(f"Non-200 status code received from {url}: {response.status_code}")
+            logger.warning(f"Non-200 status code received from {url}: {response.status_code}")
         return response.json() if response.status_code == 200 else None, response.status_code
 
     @log_function_call
@@ -47,19 +44,20 @@ class LinkedInJobScraper:
     @log_function_call
     def _gather_info(self):
         """Gather job details and skills from APIs and save the data."""
+        csv_handler = CSVHandler(self.role)
+
         for index, job_url in enumerate(self.links):
-            self.logger.info(f"Scraping job listing {index + 1}/{len(self.links)}: {job_url}")
+            logger.info(f"Scraping job listing {index + 1}/{len(self.links)}: {job_url}")
             
             job_details, _ = self._fetch_job_details(job_url)
             skills_details, _ = self._fetch_skills(job_url)
             
             time.sleep(REQUEST_DELAY)
             
-            job_listing = JobListing(self.logger)
+            job_listing = JobListing(logger)
             job_listing._extract_details(details=job_details, skills=skills_details)
             job_listing._display_details()
 
-            csv_handler = CSVHandler(self.logger, self.role, self.path)
             csv_handler._add_to_csv(job_listing.job_details)
 
     @log_function_call
@@ -84,10 +82,10 @@ class LinkedInJobScraper:
         for job_number in range(self.job_number, LINKEDIN_LIMIT, 25):
             jobs, status_code = self._process_page(job_number)
             if status_code != 200:
-                self.logger.error(f"Received {status_code} status code at job_number {job_number}. Stopping execution.")
+                logger.error(f"Received {status_code} status code at job_number {job_number}. Stopping execution.")
                 break
 
             self.links.update(jobs)
 
-        self.logger.info(f"Total number of links: {len(self.links)}")
+        logger.info(f"Total number of links: {len(self.links)}")
         self._gather_info()

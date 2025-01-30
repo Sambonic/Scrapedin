@@ -1,10 +1,20 @@
-from src.configurations.common_imports import (logging,datetime,os)
+from src.config.common_imports import logging, datetime, os
+from src.config.path_config import path_manager
 
 class LoggerManager:
     """
     Manages the logger instance and provides access to it.
     """
-    def __init__(self):
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(LoggerManager, cls).__new__(cls)
+            cls._instance._initialize_logger()
+        return cls._instance
+
+    def _initialize_logger(self):
+        """Initializes the logger and sets it up."""
         self.logger = self._set_logger()
 
     def get_logger(self) -> logging.Logger:
@@ -13,17 +23,11 @@ class LoggerManager:
 
     def _set_logger(self) -> logging.Logger:
         """Configures and returns a logger instance."""
-        current_time = datetime.now()
-        file_date = current_time.strftime("%Y%m%d%H%M")
-
         logger = logging.getLogger('my_logger')
         logger.setLevel(logging.DEBUG)
 
         # Set up file handler
-        file_path = os.path.join(self.get_path(), "logs")
-        os.makedirs(file_path, exist_ok=True)
-        file_path = os.path.join(file_path, f"log{file_date}.txt")
-        file_handler = logging.FileHandler(file_path, encoding='utf-8')
+        file_handler = logging.FileHandler(path_manager.LOG_FILE_DIR, encoding='utf-8')
         file_handler.setLevel(logging.INFO)
 
         # Set up console handler
@@ -40,11 +44,6 @@ class LoggerManager:
         logger.addHandler(console_handler)
 
         return logger
-    
-    def get_path(self) -> str:
-        """Returns the base project directory path."""
-        current_file_path = os.path.abspath(__file__)
-        current_directory = os.path.dirname(current_file_path)
-        parent_directory = os.path.dirname(current_directory)
-        super_directory = os.path.dirname(parent_directory)
-        return super_directory
+
+# Initialize the global logger instance
+logger = LoggerManager().get_logger()

@@ -1,4 +1,4 @@
-from src.configurations.common_imports import *
+from src.config.common_imports import *
 
 class JobListing:
 
@@ -50,7 +50,7 @@ class JobListing:
                 for insight in insights
                 if "displayText" in insight
             ]
-        except (KeyError, IndexError):
+        except Exception:
             return []
 
     def _display_details(self) -> None:

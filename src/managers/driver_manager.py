@@ -1,5 +1,4 @@
-
-from src.configurations.common_imports import (Chrome, ChromeOptions, WebDriverWait)
+from src.config.common_imports import (Chrome, ChromeOptions, WebDriverWait)
 
 class DriverManager:
     """

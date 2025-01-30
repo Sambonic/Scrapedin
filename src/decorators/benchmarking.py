@@ -1,4 +1,5 @@
-from src.configurations.common_imports import (psutil,functools,time)
+from src.config.common_imports import psutil,functools,time
+from src.managers.logger_manager import logger
 
 def benchmark(func):
     """Decorator to measure time and space complexity of a function."""
@@ -14,10 +15,10 @@ def benchmark(func):
         memory_after = process.memory_info().rss
 
         execution_time = end_time - start_time
-        memory_usage = memory_after - memory_before
+        memory_usage = abs(memory_before - memory_after)
 
-        self.logger.info(f"Function '{func.__name__}' execution time: {execution_time:.4f} seconds")
-        self.logger.info(f"Memory usage change: {memory_usage} bytes")
+        logger.info(f"Function '{func.__name__}' execution time: {execution_time:.4f} seconds")
+        logger.info(f"Memory usage change: {memory_usage} bytes")
 
         return result
 

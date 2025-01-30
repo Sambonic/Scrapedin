@@ -21,7 +21,7 @@ Note
 To simplify access to classes and subpackages, we use the `__all__` attribute to specify what should be accessible when importing the Scrapedin package.
 """
 
-from .configurations.linkedin_login import LinkedInLogin
+from .managers.linkedin_login import LinkedInLogin
 from .jobscraper.linkedin_job_scraper import LinkedInJobScraper
 from .jobscraper.data_preprocessing import stanadard_cleaning
 from .jobscraper.data_preprocessing import combine_data

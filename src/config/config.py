@@ -20,7 +20,7 @@ JOB_LISTINGS_API = (
 )
 
 # Variables
-LINKEDIN_LIMIT = 200
+LINKEDIN_LIMIT = 1000
 REQUEST_DELAY = 0.3
 # Linkedin Login variables
 LINKEDIN_LOGIN = "https://www.linkedin.com/login"
