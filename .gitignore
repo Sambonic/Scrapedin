@@ -147,6 +147,7 @@ pyrightconfig.json
 /data
 /main.py
 /unit_tests.py
+/todo
 
 /.gitattributes
 /scrapedin.egg-info

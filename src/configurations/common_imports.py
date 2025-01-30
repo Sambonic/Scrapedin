@@ -7,6 +7,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver.support.ui import WebDriverWait
 from bs4 import BeautifulSoup
 import requests
 
@@ -32,6 +34,7 @@ import time
 import psutil
 import cProfile
 import logging
+import functools
 from logging import Logger, FileHandler, StreamHandler, Formatter, DEBUG, INFO
 
 # Data Preprocessing, Cleaning and Analyzing

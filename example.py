@@ -17,6 +17,7 @@ role='Data Scientist'
 
 # Initialize and scrape job listings for the role
 scraper = si.LinkedInJobScraper(login, role=role)
+scraper.scrape()
 
 # Combine data for the same role from multiple files
 si.combine_data(role=role)
