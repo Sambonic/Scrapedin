@@ -54,7 +54,7 @@ class LinkedInJobScraper:
             
             time.sleep(REQUEST_DELAY)
             
-            job_listing = JobListing(logger)
+            job_listing = JobListing()
             job_listing._extract_details(details=job_details, skills=skills_details)
             job_listing._display_details()
 

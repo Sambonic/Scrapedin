@@ -6,17 +6,6 @@ class CSVHandler:
     def __init__(self, role):
         path_manager.create_csv_file(role=role)
 
-    def write_header(self, fieldnames):
-        """
-        Write the header to the CSV file (overwrites if file exists).
-        """
-        file_path = path_manager.CSV_FILE_DIR
-
-        with open(file_path, mode='w', newline='', encoding='utf-8') as file:
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-            writer.writeheader()
-            logger.info(f"Header written to {file_path}")
-
     def _add_to_csv(self, job_details: dict) -> None:
         """
         Adds job listing details to a CSV file. Creates necessary folders if needed, 

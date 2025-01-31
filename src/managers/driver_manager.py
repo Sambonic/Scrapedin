@@ -1,4 +1,5 @@
 from src.config.common_imports import (Chrome, ChromeOptions, WebDriverWait)
+from src.config.config import WAIT
 
 class DriverManager:
     """
@@ -6,13 +7,13 @@ class DriverManager:
     """
     def __init__(self):
         self.driver = self._set_driver()
-        self.wait = WebDriverWait(self.driver, 1)
+        self.wait = WebDriverWait(self.driver, WAIT)
 
-    def get_driver(self) -> Chrome:
+    def _get_driver(self) -> Chrome:
         """Returns the WebDriver instance."""
         return self.driver
 
-    def get_wait(self) -> WebDriverWait:
+    def _get_wait(self) -> WebDriverWait:
         """Returns the WebDriverWait instance."""
         return self.wait
 

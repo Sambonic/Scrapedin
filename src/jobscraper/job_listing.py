@@ -1,18 +1,20 @@
 from src.config.common_imports import *
+from src.managers.logger_manager import logger
+from typing import List, Dict, Any
 
 class JobListing:
-
     """
-    Initializes a JobListing object with the given parameters.
+    A class to manage and extract details from a job listing.
     """
 
-    def __init__(self, logger):
-        
-        self._logger = logger
+    def __init__(self):
         self.job_details = {}
     
 
-    def _extract_details(self, details, skills) -> None:
+    def _extract_details(self, details: Dict[str, Any], skills: Dict[str, Any]) -> None:
+        """
+        Extracts and updates job details from the provided `details` and `skills` dictionaries.
+        """
         # NB. Fix salary
         self.job_details.update({
             "id": details.get("jobPostingId"),
@@ -36,7 +38,10 @@ class JobListing:
             "referrals_elgible": details.get("eligibleForReferrals"),
         })
 
-    def _extract_skills(self, skills):
+    def _extract_skills(self, skills: Dict[str, Any]) -> List[str]:
+        """
+        Extracts a list of skills from the provided `skills` dictionary.
+        """
         try:
             insights = (
                 skills.get("data", {}).get("jobsDashJobPostingHowYouFitDetailsByJobPosting", {})
@@ -55,8 +60,8 @@ class JobListing:
 
     def _display_details(self) -> None:
         """
-        Displays details extracted in the terminal.
+        Displays the extracted job details in the terminal using the logger.
         """
-        self._logger.info("⬛ Job Listing Details:")
+        logger.info("⬛ Job Listing Details:")
         for key, value in self.job_details.items():
-            self._logger.info(f"{key.capitalize().replace('_', ' ')}: {value}")
+            logger.info(f"{key.capitalize().replace('_', ' ')}: {value}")

@@ -10,12 +10,12 @@ class LinkedInLogin:
 
     def __init__(self, email: str, password: str = None):
         self.session = requests.Session()
-        self.driver = DriverManager().get_driver()
+        self.driver = DriverManager()._get_driver()
         self.email = email
         self.password = password
-        self.login()
+        self._login()
 
-    def update_session(self, cookies) -> None:
+    def _update_session(self, cookies) -> None:
         """Update session details once cookies are acquired."""
 
         for cookie in cookies:
@@ -47,7 +47,7 @@ class LinkedInLogin:
 
         time.sleep(WAIT)
         cookies = self.driver.get_cookies()
-        self.update_session(cookies=cookies)
+        self._update_session(cookies=cookies)
 
         write_cookies(cookies)
         logger.info(f"User '{self.email}' created successfully.")
@@ -59,12 +59,12 @@ class LinkedInLogin:
             logger.error(f"File for user '{self.email}' not found.")
             return
 
-        self.update_session(cookies=cookies)
+        self._update_session(cookies=cookies)
 
         logger.info("Logged in successfully!")
         time.sleep(WAIT)
 
-    def login(self) -> None:
+    def _login(self) -> None:
         """Log in to LinkedIn. Load or create cookies as needed."""
 
         self.driver.get(LINKEDIN_LOGIN)

@@ -17,7 +17,7 @@ class LoggerManager:
         """Initializes the logger and sets it up."""
         self.logger = self._set_logger()
 
-    def get_logger(self) -> logging.Logger:
+    def _get_logger(self) -> logging.Logger:
         """Returns the logger instance."""
         return self.logger
 
@@ -46,4 +46,4 @@ class LoggerManager:
         return logger
 
 # Initialize the global logger instance
-logger = LoggerManager().get_logger()
+logger = LoggerManager()._get_logger()

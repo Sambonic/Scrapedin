@@ -1,43 +1,36 @@
-# Scraping
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver import Chrome, ChromeOptions
-from selenium.webdriver.support.ui import WebDriverWait
-from bs4 import BeautifulSoup
-import requests
-
-# Exceptions
-from selenium.common.exceptions import TimeoutException
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import StaleElementReferenceException
-from selenium.common.exceptions import ElementClickInterceptedException
-
-# Other
-import os
-import sys
-import pickle
+# Standard Library Imports
 import csv
-import datetime
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-from dotenv import load_dotenv
 import json
-
-# Performance Analysis and Benchmarking
+import os
+import pickle
 import time
-import psutil
-import cProfile
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+# Logging and Debugging
 import logging
 import functools
-from logging import Logger, FileHandler, StreamHandler, Formatter, DEBUG, INFO
+from logging import DEBUG, FileHandler, Formatter, INFO, Logger, StreamHandler
 
-# Data Preprocessing, Cleaning and Analyzing
-import pandas as pd
+# Performance Analysis and Benchmarking
+import psutil
+
+# Data Preprocessing, Cleaning, and Analyzing
 import numpy as np
+import pandas as pd
 import regex as re
+
+# Web Scraping and Automation
+import requests
+from selenium import webdriver
+from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
+
+# Environment Configuration
+from dotenv import load_dotenv
