@@ -1,7 +1,7 @@
 from src.config.common_imports import *
 from src.config.path_config import path_manager
 
-def read_cookies() -> pickle:
+def read_cookies():
     """
     Reads cookies from a file.
     """
