@@ -1,7 +1,7 @@
 # Scrapedin Documentation
 
 This is the documentation for the Scrapedin Python module, which is designed to scrape and gather job listings from LinkedIn using Selenium. The module contains various functions and utilities for extracting job data, cleaning and preprocessing the data, and performing data analysis. Below, you'll find the details of each function and how to use them.
-#### Last Updated: September 9th, 2023
+#### Last Updated: February 1st, 2025
 ## Table of Contents
 
 1. [Introduction](#introduction)
@@ -66,7 +66,7 @@ python -m venv env
 5. Install Dependencies:
 
    ```bash
-   pip install .
+   pip install -r requirements.txt
    ```
 
 6. Import Scrapedin as shown below.
@@ -84,22 +84,16 @@ import scrapedin as si
 # Log in to LinkedIn
 email = 'your_email@example.com'
 password = 'your_password'
-login = si.LinkedInLogin(user, password)
 
-# Initialize and scrape job listings for a specific role (e.g., "Data Scientist")
-scraper = si.LinkedInJobScraper(login, role='Data Scientist')
+# Log in to LinkedIn
+login = si.LinkedInLogin(email, password)
 
-# Combine data for the same role from multiple files
-si.combine_data(role='Data Scientist')
+# Define a specific role (e.g., "Data Scientist")
+role='Data Scientist'
 
-# Count the number of job listings by country
-si.count_by_country()
-
-# Get the top N skills from the scraped data
-si.top_skills(n=10)
-
-# Get the job distribution by expertise level
-si.job_distribution_by_expertise_level()
+# Initialize and scrape job listings for the role
+scraper = si.LinkedInJobScraper(login, role=role)
+scraper.scrape()
 ```
 
 
@@ -141,7 +135,7 @@ login = si.LinkedInLogin(email)
 <a name="scrape"></a>
 ## Scrape
 
-**Object: `LinkedInJobScraper(login, role, location=None, job_number=0, batch_size = 1)`**
+**Object: `LinkedInJobScraper(login, role, location=None, job_number=0)`**
 
 Scrapes job listings for a specific role and location from LinkedIn. The scraped data will be saved to a CSV file in the 'raw_data' folder.
 
@@ -151,7 +145,6 @@ Parameters:
 - `role`: The job role or title to search for (e.g., "Data Scientist").
 - `location` (optional): The location where job listings should be searched (e.g., "United States"). If not provided, it will assume local location of your linkedin account.
 - `job_number` (optional): The job number from which to start scraping. The default value is 0.
-- `batch_size` (optional): The number of concurrent pages you would like to be processed at a time. The default value is 1 as it is still under development.
 
 Example Usage:
 
