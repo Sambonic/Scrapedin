@@ -18,7 +18,6 @@ To simplify access to modules and classes, we use the `__all__` attribute to spe
 """
 
 from .common_imports import *
-from ..managers.driver_manager import *
 from ..managers.linkedin_login import *
 
 # List of modules and classes to make accessible when importing the Configurations subpackage.

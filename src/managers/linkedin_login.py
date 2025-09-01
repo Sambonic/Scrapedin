@@ -1,7 +1,6 @@
 from src.config.common_imports import *
-from src.config.config import LINKEDIN_LOGIN, WAIT
-from src.managers.driver_manager import DriverManager
-from src.utils.file_operations import *
+from src.config.config import LINKEDIN_LOGIN, HOMEPAGE_URL, HEADERS, WAIT
+from src.utils.cookies import *
 from src.config.path_config import path_manager
 from src.managers.logger_manager import logger
 
@@ -10,47 +9,80 @@ class LinkedInLogin:
 
     def __init__(self, email: str, password: str = None):
         self.session = requests.Session()
-        self.driver = DriverManager()._get_driver()
         self.email = email
         self.password = password
         self._login()
 
     def _update_session(self, cookies) -> None:
         """Update session details once cookies are acquired."""
+        if isinstance(cookies, list) and all(isinstance(c, dict) for c in cookies):
+            cookies = {c['name']: c['value'] for c in cookies} 
+        self.session.cookies.update(cookies)
+        HEADERS.update({'Csrf-Token': self.session.cookies.get('JSESSIONID').strip('"')})
+        self.session.headers.update(HEADERS)
 
-        for cookie in cookies:
-            self.session.cookies.set(cookie['name'], cookie['value'])
+    def _set_driver(self):
+        driver = webdriver.Firefox()
+        driver.get(LINKEDIN_LOGIN)
+        return driver
 
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'X-Restli-Protocol-Version': '2.0.0',
-            'Csrf-Token': self.session.cookies.get('JSESSIONID').strip('"'),
-        }
-        self.session.headers.update(headers)
-
-
-    def _create_cookies(self) -> None:
-        """Create and save cookies for a new login."""
+    def _login_requests(self) -> None:
+        """Login and save cookies."""
         try:
-            email_field = WebDriverWait(self.driver, WAIT).until(
-                EC.presence_of_element_located((By.ID, 'username'))
-            )
-            pass_field = WebDriverWait(self.driver, WAIT).until(
-                EC.presence_of_element_located((By.ID, 'password'))
-            )
+            html = self.session.get(HOMEPAGE_URL, headers=HEADERS).content
+            soup = BeautifulSoup(html, "html.parser")
+            csrf = soup.find("input", {"name": "loginCsrfParam"})["value"]
+
+            login_information = {
+                'session_key': self.email,
+                'session_password': self.password,
+                'loginCsrfParam': csrf,
+            }
+
+            response = self.session.post(LINKEDIN_LOGIN, data=login_information, headers=HEADERS)
+            response_url = response.url
+
+            if '/checkpoint/challenge/' in response_url:
+                logger.warning("LinkedIn challenge detected. Falling back to Selenium.")
+                self._login_selenium()
+            
+            self._save_and_update_cookies(self.session.cookies)
+            logger.info(f"User '{self.email}' logged in successfully via requests.")
+
+        except requests.RequestException as e:
+            logger.error(f"Error during requests-based login: {e}. Falling back to Selenium.")
+            self._login_selenium()
+
+    def _login_selenium(self) -> None:
+        """Login using Selenium to handle CAPTCHA and other challenges."""
+        driver = self._set_driver()
+
+        try:
+            email_field = WebDriverWait(driver, WAIT).until(EC.presence_of_element_located((By.ID, 'session_key')))
+            pass_field = WebDriverWait(driver, WAIT).until(EC.presence_of_element_located((By.ID, 'session_password')))
             email_field.send_keys(self.email)
             pass_field.send_keys(self.password)
             pass_field.submit()
+
+            WebDriverWait(driver, 10).until(EC.url_contains('/feed'))
+            
+            cookies = driver.get_cookies()
+            self._save_and_update_cookies(cookies)
+            logger.info(f"User '{self.email}' logged in successfully via Selenium.")
+        
         except TimeoutException:
-            logger.error("Timeout during login.")
-            return
+            logger.error("Selenium login failed. User input may be required for a challenge.")
+            logger.info("Please complete the login manually in the browser and then re-run the script.")
+        
+        finally:
+            driver.quit()
 
-        time.sleep(WAIT)
-        cookies = self.driver.get_cookies()
-        self._update_session(cookies=cookies)
-
+    def _save_and_update_cookies(self, cookies):
+        """Saves cookies and updates the session."""
         write_cookies(cookies)
+        self._update_session(cookies=cookies)
         logger.info(f"User '{self.email}' created successfully.")
+
 
     def _load_cookies(self) -> None:
         """Load cookies from a file to log in."""
@@ -66,8 +98,6 @@ class LinkedInLogin:
 
     def _login(self) -> None:
         """Log in to LinkedIn. Load or create cookies as needed."""
-
-        self.driver.get(LINKEDIN_LOGIN)
         exists, _ = path_manager.check_path_exists(path_manager.USERS_DIR, self.email, ".pkl")
         path_manager.create_user_file(self.email)
 
@@ -76,9 +106,7 @@ class LinkedInLogin:
                 logger.error("User not found. Login requires both email and password.")
             else:
                 logger.info("First login. Creating a log file for the new user...")
-                self._create_cookies()
+                self._login_requests()
         else:
             logger.info(f"Email '{self.email}' exists. Proceeding to login...")
             self._load_cookies()
-
-        self.driver.quit()

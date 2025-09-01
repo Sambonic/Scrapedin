@@ -23,7 +23,7 @@ import regex as re
 # Web Scraping and Automation
 import requests
 from selenium import webdriver
-from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver import Firefox, Chrome, ChromeOptions
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
@@ -31,6 +31,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
+from bs4 import BeautifulSoup
 
 # Environment Configuration
 from dotenv import load_dotenv

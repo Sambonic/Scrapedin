@@ -156,3 +156,4 @@ src/__pycache__
 src/configuration/__pycache__
 src/jobscraper/__pycache__
 src/jobscraper/testing.py
+/apis
