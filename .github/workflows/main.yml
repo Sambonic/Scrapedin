@@ -33,7 +33,7 @@ jobs:
         run: python example.py
       
       - name: Upload CSV artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: csv-files
           path: data/raw_data/*.csv
