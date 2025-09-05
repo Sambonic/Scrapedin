@@ -30,4 +30,4 @@ jobs:
           FILE_NAME: ${{ secrets.FILE_NAME }}
       
       - name: Init scraper
-        run: python ../example.py
+        run: python example.py
