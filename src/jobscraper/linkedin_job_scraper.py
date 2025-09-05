@@ -91,8 +91,8 @@ class LinkedInJobScraper:
         """
         Scrape job listings from LinkedIn.
         """
-        jobs_url = f"https://www.linkedin.com/jobs/search/?keywords={self.role}&start={self.job_number}" + (f"&location={self.location}" if self.location else "")
-        self.session.get(jobs_url)
+        JOBS_URL.format(role=self.role, job_number=self.job_number) + (f"&location={self.location}" if self.location else "")
+        self.session.get(JOBS_URL)
 
         for job_number in range(self.job_number, LINKEDIN_LIMIT, 25):
             jobs, status_code = self._process_page(job_number)

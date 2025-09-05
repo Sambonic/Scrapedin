@@ -18,14 +18,17 @@ JOB_LISTINGS_API = (
     "selectedFilters:(distance:List(2000.0)),spellCorrectionEnabled:true)&start={job_number}"
 )
 
+
 # Variables
 LINKEDIN_LIMIT = 1000
 REQUEST_DELAY = 0.3
 WAIT = 1
 
-# Linkedin Login variables
+# Linkedin URLs
 HOMEPAGE_URL = 'https://www.linkedin.com'
 LINKEDIN_LOGIN = 'https://www.linkedin.com/login'
+JOBS_URL = "https://www.linkedin.com/jobs/search/?keywords={role}&start={job_number}"
+
 
 # Session headers
 HEADERS = {
