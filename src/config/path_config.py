@@ -30,14 +30,13 @@ class PathConfig:
         """Determine and return the base project directory path."""
         github_workspace = os.environ.get("GITHUB_WORKSPACE")
         if github_workspace:
+            print(github_workspace)
             return github_workspace
         
         current_file_path = os.path.abspath(__file__)
         current_directory = os.path.dirname(current_file_path)
         parent_directory = os.path.dirname(current_directory)
         super_directory = os.path.dirname(parent_directory)
-        print(os.path.abspath())
-        print(github_workspace)
         return super_directory
     
     def create_log_file(self) -> str:
