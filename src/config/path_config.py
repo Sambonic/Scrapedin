@@ -36,6 +36,8 @@ class PathConfig:
         current_directory = os.path.dirname(current_file_path)
         parent_directory = os.path.dirname(current_directory)
         super_directory = os.path.dirname(parent_directory)
+        print(os.path.abspath())
+        print(github_workspace)
         return super_directory
     
     def create_log_file(self) -> str:
