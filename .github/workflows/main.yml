@@ -8,6 +8,10 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+          COOKIES_B64: ${{ secrets.COOKIES_B64 }}
+          EMAIL: ${{ secrets.EMAIL }}
+          
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,9 +29,6 @@ jobs:
           mkdir -p users
           cd users
           echo "$COOKIES_B64" | base64 --decode > "${EMAIL}.pkl"
-        env:
-          COOKIES_B64: ${{ secrets.COOKIES_B64 }}
-          EMAIL: ${{ secrets.EMAIL }}
       
       - name: Init scraper
         run: python example.py
