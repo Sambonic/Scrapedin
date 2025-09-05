@@ -24,10 +24,10 @@ jobs:
         run: |
           mkdir -p users
           cd users
-          echo "$COOKIES_B64" | base64 --decode > "${FILE_NAME}.pkl"
+          echo "$COOKIES_B64" | base64 --decode > "${EMAIL}.pkl"
         env:
           COOKIES_B64: ${{ secrets.COOKIES_B64 }}
-          FILE_NAME: ${{ secrets.FILE_NAME }}
+          EMAIL: ${{ secrets.EMAIL }}
       
       - name: Init scraper
         run: python example.py

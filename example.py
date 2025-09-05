@@ -1,4 +1,3 @@
-# Import the Scrapedin class
 import src as si
 from dotenv import load_dotenv
 import os 
@@ -12,7 +11,6 @@ password = os.getenv('PASSWORD')
 # Log in to LinkedIn
 login = si.LinkedInLogin(email, password)
 
-# Define a specific role (e.g., "Data Scientist")
 role='Software Engineer'
 
 # Initialize and scrape job listings for the role
