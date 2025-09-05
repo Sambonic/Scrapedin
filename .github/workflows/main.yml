@@ -30,5 +30,6 @@ jobs:
           echo "$COOKIES_B64" | base64 --decode > "users/${EMAIL}.pkl"
       
       - name: Init scraper
-        run: python example.py
-        working-directory: ./Scrapedin
+        run: |
+          cd Scrapedin
+          python example.py
