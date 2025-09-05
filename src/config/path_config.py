@@ -28,6 +28,10 @@ class PathConfig:
 
     def _set_base_path(self) -> str:
         """Determine and return the base project directory path."""
+        github_workspace = os.environ.get("GITHUB_WORKSPACE")
+        if github_workspace:
+            return github_workspace
+        
         current_file_path = os.path.abspath(__file__)
         current_directory = os.path.dirname(current_file_path)
         parent_directory = os.path.dirname(current_directory)
