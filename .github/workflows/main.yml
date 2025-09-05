@@ -11,7 +11,7 @@ jobs:
     env:
           COOKIES_B64: ${{ secrets.COOKIES_B64 }}
           EMAIL: ${{ secrets.EMAIL }}
-          
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,8 +27,8 @@ jobs:
       - name: Restore cookies
         run: |
           mkdir -p users
-          cd users
-          echo "$COOKIES_B64" | base64 --decode > "${EMAIL}.pkl"
+          echo "$COOKIES_B64" | base64 --decode > "users/${EMAIL}.pkl"
       
       - name: Init scraper
         run: python example.py
+        working-directory: ./Scrapedin
