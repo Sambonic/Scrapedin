@@ -31,3 +31,9 @@ jobs:
       
       - name: Init scraper
         run: python example.py
+      
+      - name: Upload CSV artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: csv-files
+          path: data/raw_data/*.csv
