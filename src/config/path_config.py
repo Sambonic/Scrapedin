@@ -28,9 +28,9 @@ class PathConfig:
 
     def _set_base_path(self) -> str:
         """Determine and return the base project directory path."""
+        
         github_workspace = os.environ.get("GITHUB_WORKSPACE")
         if github_workspace:
-            print(github_workspace)
             return github_workspace
         
         current_file_path = os.path.abspath(__file__)

@@ -6,6 +6,7 @@ def read_cookies():
     Reads cookies from a file.
     """
     file_path: str = path_manager.USER_COOKIE_DIR
+    print(file_path)
     try:
         with open(file_path, 'rb') as file:
             return pickle.load(file)

@@ -86,6 +86,7 @@ class LinkedInLogin:
 
     def _load_cookies(self) -> None:
         """Load cookies from a file to log in."""
+        path_manager.create_user_file(self.email)
         cookies = read_cookies()
         if not cookies:
             logger.error(f"File for user '{self.email}' not found.")
