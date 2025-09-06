@@ -29,11 +29,11 @@ class PathConfig:
     from pathlib import Path
 
     def _set_base_path(self) -> str:
-        """Find project root by walking upward until requirements.txt is found."""
+        """Find project root by walking upward until pyproject.toml is found."""
         current_dir = Path(__file__).resolve().parent
 
         for parent in [current_dir] + list(current_dir.parents):
-            if (parent / "requirements.txt").exists():
+            if (parent / "pyproject.toml").exists():
                 return str(parent)
 
         return str(Path.cwd())
