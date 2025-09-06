@@ -4,11 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scrapedin"
-version = "1.0.0"
-description = "Python module designed to simplify the process of gathering job listings from LinkedIn and performing data analysis on the scraped data to develop an understanding for the required skills and more needed in the market in real-time! "
+version = "1.0.1"
+description = "Python module designed to simplify the process of gathering job listings from LinkedIn and performing data analysis on the scraped data to develop an understanding for the required skills and more needed in the market in real-time!"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+dependencies = [
+    "psutil",
+    "regex",
+    "requests",
+    "selenium",
+    "python-dotenv",
+    "beautifulsoup4"
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
