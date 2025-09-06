@@ -1,4 +1,4 @@
-from src.config.common_imports import *
+from scrapedin.config.common_imports import *
 
 class PathConfig:
     """Singleton class to manage project paths and ensure necessary directories are created."""
@@ -26,18 +26,17 @@ class PathConfig:
 
         self._create_directories()
 
+    from pathlib import Path
+
     def _set_base_path(self) -> str:
-        """Determine and return the base project directory path."""
-        
-        github_workspace = os.environ.get("GITHUB_WORKSPACE")
-        if github_workspace:
-            return github_workspace
-        
-        current_file_path = os.path.abspath(__file__)
-        current_directory = os.path.dirname(current_file_path)
-        parent_directory = os.path.dirname(current_directory)
-        super_directory = os.path.dirname(parent_directory)
-        return super_directory
+        """Find project root by walking upward until requirements.txt is found."""
+        current_dir = Path(__file__).resolve().parent
+
+        for parent in [current_dir] + list(current_dir.parents):
+            if (parent / "requirements.txt").exists():
+                return str(parent)
+
+        return str(Path.cwd())
     
     def create_log_file(self) -> str:
         current_time = datetime.now()

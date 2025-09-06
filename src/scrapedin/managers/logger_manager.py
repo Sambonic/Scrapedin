@@ -1,5 +1,5 @@
-from src.config.common_imports import logging
-from src.config.path_config import path_manager
+from scrapedin.config.common_imports import logging
+from scrapedin.config.path_config import path_manager
 
 class LoggerManager:
     """

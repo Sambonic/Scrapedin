@@ -1,6 +1,6 @@
-from src.config.common_imports import csv, os
-from src.config.path_config import path_manager
-from src.managers.logger_manager import logger
+from scrapedin.config.common_imports import csv, os
+from scrapedin.config.path_config import path_manager
+from scrapedin.managers.logger_manager import logger
 
 class CSVHandler:
     def __init__(self, role):

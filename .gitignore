@@ -152,8 +152,9 @@ pyrightconfig.json
 /.gitattributes
 /scrapedin.egg-info
 
-src/__pycache__
-src/configuration/__pycache__
-src/jobscraper/__pycache__
-src/jobscraper/testing.py
+scrapedin/__pycache__
+scrapedin/configuration/__pycache__
+scrapedin/jobscraper/__pycache__
+scrapedin/jobscraper/testing.py
 /apis
+/.vscode

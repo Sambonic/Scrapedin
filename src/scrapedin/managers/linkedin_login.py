@@ -1,8 +1,8 @@
-from src.config.common_imports import *
-from src.config.config import LINKEDIN_LOGIN, HOMEPAGE_URL, HEADERS, WAIT
-from src.utils.cookies import *
-from src.config.path_config import path_manager
-from src.managers.logger_manager import logger
+from scrapedin.config.common_imports import *
+from scrapedin.config.config import LINKEDIN_LOGIN, HOMEPAGE_URL, HEADERS, WAIT
+from scrapedin.utils.cookies import *
+from scrapedin.config.path_config import path_manager
+from scrapedin.managers.logger_manager import logger
 
 class LinkedInLogin:
     """Handles LinkedIn login using email and password. Manages cookies for persistent sessions."""

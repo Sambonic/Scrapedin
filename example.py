@@ -1,4 +1,4 @@
-import src as si
+import scrapedin as si
 from dotenv import load_dotenv
 import os 
 

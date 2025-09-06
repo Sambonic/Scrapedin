@@ -1,11 +1,11 @@
-from src.config.common_imports import *
-from src.jobscraper.job_listing import JobListing
-from src.decorators.benchmarking import benchmark
-from src.decorators.logging import log_function_call
-from src.config.config import *
-from src.managers.csv_handler import CSVHandler
-from src.managers.logger_manager import logger
-from src.managers.linkedin_login import LinkedInLogin
+from scrapedin.config.common_imports import *
+from scrapedin.jobscraper.job_listing import JobListing
+from scrapedin.decorators.benchmarking import benchmark
+from scrapedin.decorators.logging import log_function_call
+from scrapedin.config.config import *
+from scrapedin.managers.csv_handler import CSVHandler
+from scrapedin.managers.logger_manager import logger
+from scrapedin.managers.linkedin_login import LinkedInLogin
 
 class LinkedInJobScraper:
     def __init__(self, login: LinkedInLogin, role: str, location: str = None, job_number: int = 0):

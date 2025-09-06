@@ -1,5 +1,5 @@
-from src.config.common_imports import psutil,functools,time
-from src.managers.logger_manager import logger
+from scrapedin.config.common_imports import psutil,functools,time
+from scrapedin.managers.logger_manager import logger
 
 def benchmark(func):
     """Decorator to measure time and space complexity of a function."""

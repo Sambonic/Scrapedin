@@ -19,7 +19,6 @@ To simplify access to modules, we use the `__all__` attribute to specify what sh
 
 from .job_listing import *
 from .linkedin_job_scraper import *
-from .data_preprocessing import *
 
 # List of modules to make accessible when importing the Jobscraper subpackage.
 __all__ = ['job_listing', 'linkedin_job_scraper', 'data_preprocessing']

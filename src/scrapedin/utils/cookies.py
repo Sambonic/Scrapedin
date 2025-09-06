@@ -1,5 +1,5 @@
-from src.config.common_imports import *
-from src.config.path_config import path_manager
+from scrapedin.config.common_imports import *
+from scrapedin.config.path_config import path_manager
 
 def read_cookies():
     """
